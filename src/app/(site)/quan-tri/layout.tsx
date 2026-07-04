@@ -6,6 +6,7 @@ const TABS = [
   { href: "/quan-tri/cham-bai", label: "Chấm bài" },
   { href: "/quan-tri/bai-tap", label: "Bài tập" },
   { href: "/quan-tri/hoc-vien", label: "Học viên" },
+  { href: "/doi-mat-khau", label: "Đổi mật khẩu" },
 ];
 
 export const metadata = { title: "Quản trị" };

@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ArrowRight,
   LogOut,
+  KeyRound,
   RotateCcw,
 } from "lucide-react";
 import { db } from "@/lib/db";
@@ -55,15 +56,24 @@ export default async function StudentDashboard() {
             <div className="rule-gold mt-5" />
             <p className="mt-4 font-ui text-sm text-muted">{user.email}</p>
           </div>
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="flex cursor-pointer items-center gap-2 border border-line px-5 py-2.5 font-ui text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-ink-soft transition-colors hover:border-danger hover:text-danger"
+          <div className="flex items-center gap-2">
+            <Link
+              href="/doi-mat-khau"
+              className="flex items-center gap-2 border border-line px-5 py-2.5 font-ui text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-ink-soft transition-colors hover:border-navy hover:text-navy"
             >
-              <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
-              Đăng xuất
-            </button>
-          </form>
+              <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />
+              Đổi mật khẩu
+            </Link>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="flex cursor-pointer items-center gap-2 border border-line px-5 py-2.5 font-ui text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-ink-soft transition-colors hover:border-danger hover:text-danger"
+              >
+                <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                Đăng xuất
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 

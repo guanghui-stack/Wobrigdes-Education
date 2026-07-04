@@ -76,12 +76,15 @@ export async function setupServer() {
   // Ở máy local (npm run dev) database đã có sẵn — chỉ tự khởi tạo trên hosting.
   if (process.env.NODE_ENV !== "production") return;
 
+  const g = globalThis as { __wobridgesInit?: string };
   try {
     console.log("[wobridges] Kiểm tra database + tài khoản admin…");
     const { initDatabase } = await import("./lib/init-db");
     await initDatabase();
+    g.__wobridgesInit = "ok";
     console.log("[wobridges] Khởi tạo hoàn tất — website sẵn sàng.");
   } catch (err) {
+    g.__wobridgesInit = String(err).slice(0, 500);
     console.error("[wobridges] Khởi tạo database thất bại:", err);
   }
 }

@@ -11,6 +11,9 @@ export async function GET() {
     nodeEnv: process.env.NODE_ENV,
     sessionSecretConfigured: Boolean(process.env.SESSION_SECRET),
     databaseUrlConfigured: Boolean(process.env.DATABASE_URL),
+    initStatus:
+      (globalThis as { __wobridgesInit?: string }).__wobridgesInit ??
+      "chưa chạy (dev hoặc instrumentation không được gọi)",
   };
 
   try {

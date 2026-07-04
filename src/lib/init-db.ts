@@ -1,6 +1,6 @@
-import path from "node:path";
-import { pathToFileURL } from "node:url";
+import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import seedData from "../../prisma/seed-data.json";
 
 /**
  * Tạo bảng trực tiếp bằng SQL (tương đương `prisma db push` cho schema hiện tại)
@@ -57,14 +57,37 @@ export async function initDatabase() {
     await db.$executeRawUnsafe(stmt);
   }
 
-  // Seed admin + bài tập mẫu (script tự bỏ qua nếu đã tồn tại).
-  // Import động qua Function để bundler không cố đóng gói file .mjs.
-  const seedUrl = pathToFileURL(
-    path.join(process.cwd(), "prisma", "seed.mjs")
-  ).href;
-  const dynamicImport = new Function("u", "return import(u)") as (
-    u: string
-  ) => Promise<{ default: Promise<void> }>;
-  const mod = await dynamicImport(seedUrl);
-  await mod.default;
+  // Seed admin + bài tập mẫu từ JSON đóng gói kèm ứng dụng
+  // (bỏ qua phần đã tồn tại — chạy lại vô hại, không ghi đè dữ liệu).
+  const admin = await db.user.findUnique({
+    where: { email: seedData.admin.email },
+  });
+  if (!admin) {
+    await db.user.create({
+      data: {
+        email: seedData.admin.email,
+        name: seedData.admin.name,
+        passwordHash: await bcrypt.hash(seedData.admin.password, 10),
+        role: "ADMIN",
+      },
+    });
+    console.log(`[wobridges] Đã tạo tài khoản admin: ${seedData.admin.email}`);
+  }
+
+  for (const ex of seedData.exercises) {
+    const existing = await db.exercise.findFirst({ where: { title: ex.title } });
+    if (!existing) {
+      await db.exercise.create({
+        data: {
+          skill: ex.skill,
+          taskType: ex.taskType,
+          title: ex.title,
+          description: ex.description,
+          durationMinutes: ex.durationMinutes,
+          content: JSON.stringify(ex.content),
+        },
+      });
+      console.log(`[wobridges] Đã tạo bài tập: ${ex.title}`);
+    }
+  }
 }

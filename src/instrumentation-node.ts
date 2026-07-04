@@ -1,54 +1,85 @@
-import { execSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 /**
  * Tự động chuẩn bị mọi thứ khi server khởi động, để người vận hành
  * không cần gõ lệnh trên hosting:
- *   1. Tạo file .env với SESSION_SECRET ngẫu nhiên nếu chưa có
- *   2. Tạo bảng database (prisma db push — an toàn, không xóa dữ liệu cũ)
- *   3. Seed tài khoản admin + bài tập mẫu nếu chưa tồn tại
+ *   1. Bảo đảm DATABASE_URL và SESSION_SECRET tồn tại (tự sinh nếu thiếu,
+ *      cố gắng ghi lại vào .env; nếu không ghi được thì lưu file dự phòng
+ *      trong thư mục tạm để giữ ổn định giữa các lần khởi động)
+ *   2. Tạo bảng database + seed admin/bài mẫu (không cần Prisma CLI)
  */
 export async function setupServer() {
   const root = process.cwd();
   const envPath = path.join(root, ".env");
-  const envText = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
 
-  const ensureEnv = (key: string, fallback: string) => {
-    if (process.env[key]) return;
+  let envText = "";
+  try {
+    envText = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
+  } catch {
+    /* không đọc được .env — tiếp tục với giá trị tự sinh */
+  }
+
+  const readFromEnvFile = (key: string): string | null => {
     const match = envText.match(new RegExp(`^${key}=["']?([^"'\r\n]+)`, "m"));
-    if (match) {
-      process.env[key] = match[1];
-      return;
-    }
-    fs.appendFileSync(envPath, `${key}="${fallback}"\n`);
-    process.env[key] = fallback;
-    console.log(`[wobridges] Đã tự tạo biến môi trường ${key} trong .env`);
+    return match ? match[1] : null;
   };
 
-  ensureEnv("DATABASE_URL", "file:./prod.db");
-  ensureEnv("SESSION_SECRET", randomBytes(32).toString("hex"));
+  const persist = (key: string, value: string) => {
+    try {
+      fs.appendFileSync(envPath, `${key}="${value}"\n`);
+      console.log(`[wobridges] Đã lưu ${key} vào .env`);
+      return;
+    } catch {
+      /* .env không ghi được — thử file dự phòng */
+    }
+    try {
+      fs.writeFileSync(fallbackPath(key), value, { mode: 0o600 });
+      console.log(`[wobridges] Đã lưu ${key} vào file dự phòng (thư mục tạm)`);
+    } catch {
+      console.warn(
+        `[wobridges] Không lưu được ${key} — dùng giá trị trong bộ nhớ (sẽ đổi khi khởi động lại)`
+      );
+    }
+  };
 
-  // Chỉ tự khởi tạo database ở môi trường production (trên hosting).
-  // Ở máy local, database đã được tạo sẵn khi phát triển.
+  const fallbackPath = (key: string) =>
+    path.join(os.tmpdir(), `wobridges-${key.toLowerCase()}`);
+
+  const readFallback = (key: string): string | null => {
+    try {
+      const p = fallbackPath(key);
+      if (fs.existsSync(p)) return fs.readFileSync(p, "utf8").trim() || null;
+    } catch {
+      /* bỏ qua */
+    }
+    return null;
+  };
+
+  const ensureEnv = (key: string, generate: () => string) => {
+    if (process.env[key]) return;
+    const existing = readFromEnvFile(key) ?? readFallback(key);
+    if (existing) {
+      process.env[key] = existing;
+      return;
+    }
+    const value = generate();
+    process.env[key] = value;
+    persist(key, value);
+  };
+
+  ensureEnv("DATABASE_URL", () => "file:./prod.db");
+  ensureEnv("SESSION_SECRET", () => randomBytes(32).toString("hex"));
+
+  // Ở máy local (npm run dev) database đã có sẵn — chỉ tự khởi tạo trên hosting.
   if (process.env.NODE_ENV !== "production") return;
 
-  const node = `"${process.execPath}"`;
-  const prismaCli = path.join(root, "node_modules", "prisma", "build", "index.js");
   try {
-    console.log("[wobridges] Kiểm tra và tạo bảng database…");
-    execSync(`${node} "${prismaCli}" db push --skip-generate`, {
-      cwd: root,
-      stdio: "inherit",
-      env: process.env,
-    });
-    console.log("[wobridges] Kiểm tra tài khoản admin + bài tập mẫu…");
-    execSync(`${node} "${path.join(root, "prisma", "seed.mjs")}"`, {
-      cwd: root,
-      stdio: "inherit",
-      env: process.env,
-    });
+    console.log("[wobridges] Kiểm tra database + tài khoản admin…");
+    const { initDatabase } = await import("./lib/init-db");
+    await initDatabase();
     console.log("[wobridges] Khởi tạo hoàn tất — website sẵn sàng.");
   } catch (err) {
     console.error("[wobridges] Khởi tạo database thất bại:", err);

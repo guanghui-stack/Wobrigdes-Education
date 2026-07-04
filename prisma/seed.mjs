@@ -395,10 +395,15 @@ async function main() {
   }
 }
 
-main()
+// Chạy được cả 2 cách: `node prisma/seed.mjs` (thủ công) hoặc được
+// server import khi khởi động (src/lib/init-db.ts) — export promise
+// để bên import chờ seed xong.
+const seedPromise = main()
   .then(() => db.$disconnect())
   .catch((e) => {
     console.error(e);
     db.$disconnect();
-    process.exit(1);
+    process.exitCode = 1;
   });
+
+export default seedPromise;

@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/*
+  Wobridges — World Bridges English Center
+  Hệ thiết kế editorial: nền kem, mực navy, điểm nhấn vàng đồng,
+  tiêu đề serif, nhãn in hoa giãn cách. Tham chiếu: cẩm nang in ấn cao cấp.
+*/
+
+@theme {
+  /* Nền & bề mặt */
+  --color-cream: #faf6ef;
+  --color-cream-deep: #f3ecdd;
+  --color-paper: #fffdf9;
+
+  /* Mực chữ */
+  --color-ink: #22303e;
+  --color-ink-soft: #4c5a68;
+  --color-muted: #77808b;
+
+  /* Thương hiệu */
+  --color-navy: #1e3a5c;
+  --color-navy-deep: #16293f;
+  --color-teal: #2b5f66;
+  --color-gold: #b8862b;
+  --color-gold-soft: #d3b264;
+  --color-gold-pale: #efe4c8;
+
+  /* Ngữ nghĩa */
+  --color-line: #e6ddcb;
+  --color-line-strong: #cfc3a9;
+  --color-success: #2e6b4f;
+  --color-success-pale: #e7f0ea;
+  --color-danger: #b4232a;
+  --color-danger-pale: #f9e9e9;
+  --color-info-pale: #e8eef5;
+
+  /* Font — cả ba đều hỗ trợ tiếng Việt */
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-body: var(--font-source-serif), Georgia, serif;
+  --font-ui: var(--font-be-vietnam), system-ui, sans-serif;
+
+  --tracking-label: 0.14em;
+
+  --shadow-card: 0 1px 2px rgb(34 48 62 / 0.06), 0 8px 24px rgb(34 48 62 / 0.07);
+  --shadow-lift: 0 2px 4px rgb(34 48 62 / 0.08), 0 16px 40px rgb(34 48 62 / 0.12);
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+::selection {
+  background: var(--color-gold-pale);
+  color: var(--color-navy-deep);
+}
+
+/* Nhãn mục in hoa giãn cách — mô-típ editorial chủ đạo */
+.label-caps {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+/* Gạch nhấn vàng dưới tiêu đề */
+.rule-gold {
+  width: 3.5rem;
+  height: 3px;
+  background: var(--color-gold);
+}
+
+/* Đồng hồ đếm ngược dùng chữ số đều nhau tránh nhảy layout */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

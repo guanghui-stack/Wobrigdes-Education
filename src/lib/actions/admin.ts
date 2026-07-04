@@ -1,0 +1,221 @@
+"use server";
+
+import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/session";
+
+export type AdminFormState = { error?: string; success?: string } | undefined;
+
+/* ===== Quản lý học viên ===== */
+
+export async function toggleUserActiveAction(userId: string) {
+  const admin = await requireAdmin();
+  if (userId === admin.id) return;
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user || user.role === "ADMIN") return;
+  await db.user.update({
+    where: { id: userId },
+    data: { active: !user.active },
+  });
+  revalidatePath("/quan-tri/hoc-vien");
+}
+
+export async function resetUserPasswordAction(
+  _prev: AdminFormState,
+  formData: FormData
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const newPassword = String(formData.get("newPassword") ?? "");
+  if (newPassword.length < 8) {
+    return { error: "Mật khẩu mới cần tối thiểu 8 ký tự." };
+  }
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user) return { error: "Không tìm thấy học viên." };
+  await db.user.update({
+    where: { id: userId },
+    data: { passwordHash: await bcrypt.hash(newPassword, 10) },
+  });
+  revalidatePath("/quan-tri/hoc-vien");
+  return { success: `Đã đặt lại mật khẩu cho ${user.email}.` };
+}
+
+/* ===== Quản lý bài tập ===== */
+
+function parseExerciseForm(formData: FormData): {
+  error?: string;
+  data?: {
+    skill: string;
+    taskType: string;
+    title: string;
+    description: string;
+    durationMinutes: number;
+    content: string;
+    published: boolean;
+  };
+} {
+  const skill = String(formData.get("skill") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const durationMinutes = Number(formData.get("durationMinutes"));
+  const published = formData.get("published") === "on";
+
+  if (!["READING", "WRITING"].includes(skill)) {
+    return { error: "Kỹ năng không hợp lệ (hiện hỗ trợ READING và WRITING)." };
+  }
+  if (title.length < 5) return { error: "Tiêu đề cần tối thiểu 5 ký tự." };
+  if (!Number.isFinite(durationMinutes) || durationMinutes < 1 || durationMinutes > 240) {
+    return { error: "Thời gian làm bài phải từ 1 đến 240 phút." };
+  }
+
+  let taskType: string;
+  let content: string;
+
+  if (skill === "WRITING") {
+    const task = String(formData.get("task") ?? "");
+    const prompt = String(formData.get("prompt") ?? "").trim();
+    const guidance = String(formData.get("guidance") ?? "").trim();
+    const minWords = Number(formData.get("minWords"));
+    const dataTableRaw = String(formData.get("dataTable") ?? "").trim();
+
+    if (!["TASK_1", "TASK_2"].includes(task)) return { error: "Chọn Task 1 hoặc Task 2." };
+    if (prompt.length < 20) return { error: "Đề bài cần tối thiểu 20 ký tự." };
+    if (!Number.isFinite(minWords) || minWords < 50 || minWords > 1000) {
+      return { error: "Số từ tối thiểu phải từ 50 đến 1000." };
+    }
+
+    let dataTable: unknown = undefined;
+    if (dataTableRaw) {
+      try {
+        dataTable = JSON.parse(dataTableRaw);
+      } catch {
+        return { error: "Bảng số liệu không phải JSON hợp lệ." };
+      }
+    }
+
+    taskType = task === "TASK_1" ? "WRITING_TASK_1" : "WRITING_TASK_2";
+    content = JSON.stringify({
+      task,
+      prompt,
+      minWords,
+      ...(guidance ? { guidance } : {}),
+      ...(dataTable ? { dataTable } : {}),
+    });
+  } else {
+    const contentRaw = String(formData.get("content") ?? "").trim();
+    try {
+      const parsed = JSON.parse(contentRaw);
+      if (!parsed.passage?.title || !Array.isArray(parsed.passage?.paragraphs)) {
+        return { error: "JSON thiếu passage.title hoặc passage.paragraphs." };
+      }
+      if (!Array.isArray(parsed.questionGroups) || parsed.questionGroups.length === 0) {
+        return { error: "JSON thiếu questionGroups." };
+      }
+      for (const g of parsed.questionGroups) {
+        if (!["TFNG", "MC", "GAP"].includes(g.type)) {
+          return { error: `Loại câu hỏi không hỗ trợ: ${g.type} (dùng TFNG, MC, GAP).` };
+        }
+        if (!Array.isArray(g.questions) || g.questions.length === 0) {
+          return { error: "Mỗi questionGroup cần ít nhất 1 câu hỏi." };
+        }
+        for (const q of g.questions) {
+          if (!q.id || !q.prompt || !q.answer) {
+            return { error: "Mỗi câu hỏi cần đủ id, prompt và answer." };
+          }
+        }
+      }
+      content = JSON.stringify(parsed);
+    } catch (e) {
+      if (e instanceof SyntaxError) return { error: "Nội dung không phải JSON hợp lệ." };
+      throw e;
+    }
+    taskType = "READING_PASSAGE";
+  }
+
+  return {
+    data: { skill, taskType, title, description, durationMinutes, content, published },
+  };
+}
+
+export async function createExerciseAction(
+  _prev: AdminFormState,
+  formData: FormData
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const parsed = parseExerciseForm(formData);
+  if (parsed.error) return { error: parsed.error };
+  await db.exercise.create({ data: parsed.data! });
+  revalidatePath("/quan-tri/bai-tap");
+  redirect("/quan-tri/bai-tap");
+}
+
+export async function updateExerciseAction(
+  exerciseId: string,
+  _prev: AdminFormState,
+  formData: FormData
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const parsed = parseExerciseForm(formData);
+  if (parsed.error) return { error: parsed.error };
+  await db.exercise.update({ where: { id: exerciseId }, data: parsed.data! });
+  revalidatePath("/quan-tri/bai-tap");
+  redirect("/quan-tri/bai-tap");
+}
+
+export async function toggleExercisePublishedAction(exerciseId: string) {
+  await requireAdmin();
+  const ex = await db.exercise.findUnique({ where: { id: exerciseId } });
+  if (!ex) return;
+  await db.exercise.update({
+    where: { id: exerciseId },
+    data: { published: !ex.published },
+  });
+  revalidatePath("/quan-tri/bai-tap");
+  revalidatePath("/luyen-tap");
+}
+
+export async function deleteExerciseAction(exerciseId: string) {
+  await requireAdmin();
+  await db.exercise.delete({ where: { id: exerciseId } });
+  revalidatePath("/quan-tri/bai-tap");
+  revalidatePath("/luyen-tap");
+}
+
+/* ===== Chấm bài Writing ===== */
+
+export async function gradeAttemptAction(
+  attemptId: string,
+  _prev: AdminFormState,
+  formData: FormData
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const band = Number(formData.get("band"));
+  const feedback = String(formData.get("feedback") ?? "").trim();
+
+  if (!Number.isFinite(band) || band < 0 || band > 9 || (band * 2) % 1 !== 0) {
+    return { error: "Band điểm phải từ 0 đến 9, bước nhảy 0.5 (ví dụ 6.5)." };
+  }
+  if (feedback.length < 10) {
+    return { error: "Nhận xét cần tối thiểu 10 ký tự để có giá trị với học viên." };
+  }
+
+  const attempt = await db.attempt.findUnique({ where: { id: attemptId } });
+  if (!attempt || attempt.status === "IN_PROGRESS") {
+    return { error: "Bài làm không hợp lệ hoặc chưa được nộp." };
+  }
+
+  await db.attempt.update({
+    where: { id: attemptId },
+    data: {
+      status: "GRADED",
+      band,
+      feedback,
+      gradedAt: new Date(),
+      gradedById: admin.id,
+    },
+  });
+  revalidatePath("/quan-tri/cham-bai");
+  redirect("/quan-tri/cham-bai");
+}

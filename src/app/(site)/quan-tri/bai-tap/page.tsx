@@ -1,0 +1,135 @@
+import Link from "next/link";
+import { Plus, Pencil, Eye, EyeOff, Trash2 } from "lucide-react";
+import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/session";
+import {
+  toggleExercisePublishedAction,
+  deleteExerciseAction,
+} from "@/lib/actions/admin";
+
+export const metadata = { title: "Quản lý bài tập" };
+
+const SKILL_LABEL: Record<string, string> = {
+  READING: "Reading",
+  WRITING: "Writing",
+  LISTENING: "Listening",
+  SPEAKING: "Speaking",
+};
+
+export default async function AdminExercisesPage() {
+  await requireAdmin();
+  const exercises = await db.exercise.findMany({
+    orderBy: [{ skill: "asc" }, { createdAt: "asc" }],
+    include: { _count: { select: { attempts: true } } },
+  });
+
+  return (
+    <section className="mx-auto max-w-6xl px-6 py-12">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="label-caps">Ngân hàng đề</p>
+          <h1 className="mt-3 font-display text-3xl font-bold text-navy-deep md:text-4xl">
+            Quản lý bài tập
+          </h1>
+          <div className="rule-gold mt-5" />
+        </div>
+        <Link
+          href="/quan-tri/bai-tap/moi"
+          className="flex items-center gap-2 border border-gold bg-gold px-6 py-3 font-ui text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-paper transition-colors hover:bg-[#9d7223]"
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          Tạo bài tập mới
+        </Link>
+      </div>
+
+      <div className="mt-10 overflow-x-auto">
+        <table className="w-full min-w-[720px] border border-line font-ui text-sm">
+          <thead>
+            <tr className="bg-navy text-paper">
+              <th className="px-4 py-3 text-left font-semibold">Bài tập</th>
+              <th className="px-4 py-3 text-left font-semibold">Kỹ năng</th>
+              <th className="px-4 py-3 text-center font-semibold">Thời gian</th>
+              <th className="px-4 py-3 text-center font-semibold">Lượt làm</th>
+              <th className="px-4 py-3 text-center font-semibold">Trạng thái</th>
+              <th className="px-4 py-3 text-right font-semibold">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {exercises.map((ex) => (
+              <tr key={ex.id} className="bg-paper">
+                <td className="max-w-[300px] px-4 py-3">
+                  <p className="truncate font-semibold text-ink">{ex.title}</p>
+                  <p className="truncate text-xs text-muted">{ex.description}</p>
+                </td>
+                <td className="px-4 py-3 text-ink-soft">
+                  {SKILL_LABEL[ex.skill] ?? ex.skill}
+                </td>
+                <td className="px-4 py-3 text-center tabular-nums text-ink-soft">
+                  {ex.durationMinutes}&apos;
+                </td>
+                <td className="px-4 py-3 text-center tabular-nums text-ink-soft">
+                  {ex._count.attempts}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {ex.published ? (
+                    <span className="border border-success bg-success-pale px-2 py-0.5 text-xs font-semibold text-success">
+                      Đang mở
+                    </span>
+                  ) : (
+                    <span className="border border-line bg-cream px-2 py-0.5 text-xs font-semibold text-muted">
+                      Ẩn
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Link
+                      href={`/quan-tri/bai-tap/${ex.id}`}
+                      title="Sửa bài tập"
+                      className="flex h-9 w-9 items-center justify-center border border-line text-ink-soft transition-colors hover:border-navy hover:text-navy"
+                    >
+                      <Pencil className="h-4 w-4" aria-hidden="true" />
+                      <span className="sr-only">Sửa</span>
+                    </Link>
+                    <form action={toggleExercisePublishedAction.bind(null, ex.id)}>
+                      <button
+                        type="submit"
+                        title={ex.published ? "Ẩn khỏi học viên" : "Mở cho học viên"}
+                        className="flex h-9 w-9 cursor-pointer items-center justify-center border border-line text-ink-soft transition-colors hover:border-gold hover:text-gold"
+                      >
+                        {ex.published ? (
+                          <EyeOff className="h-4 w-4" aria-hidden="true" />
+                        ) : (
+                          <Eye className="h-4 w-4" aria-hidden="true" />
+                        )}
+                        <span className="sr-only">
+                          {ex.published ? "Ẩn" : "Hiện"}
+                        </span>
+                      </button>
+                    </form>
+                    {ex._count.attempts === 0 && (
+                      <form action={deleteExerciseAction.bind(null, ex.id)}>
+                        <button
+                          type="submit"
+                          title="Xóa bài tập (chỉ khi chưa có lượt làm)"
+                          className="flex h-9 w-9 cursor-pointer items-center justify-center border border-line text-ink-soft transition-colors hover:border-danger hover:text-danger"
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          <span className="sr-only">Xóa</span>
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-4 font-ui text-xs text-muted">
+        Bài tập đã có lượt làm không thể xóa để bảo toàn hồ sơ học viên — hãy
+        dùng nút ẩn thay thế.
+      </p>
+    </section>
+  );
+}

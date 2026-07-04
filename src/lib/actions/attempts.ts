@@ -1,0 +1,125 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { requireUser } from "@/lib/session";
+import { gradeReading, type ReadingContent } from "@/lib/exercise-content";
+
+/** Dung sai sau hạn chót (mạng chậm, tự nộp phía client trễ vài giây). */
+const GRACE_MS = 15_000;
+
+/** Bắt đầu (hoặc tiếp tục) một lượt làm bài. */
+export async function startAttemptAction(exerciseId: string) {
+  const user = await requireUser();
+
+  const exercise = await db.exercise.findUnique({ where: { id: exerciseId } });
+  if (!exercise || !exercise.published) redirect("/luyen-tap");
+
+  // Nếu còn lượt đang làm dở và chưa quá hạn thì quay lại lượt đó
+  const existing = await db.attempt.findFirst({
+    where: { userId: user.id, exerciseId, status: "IN_PROGRESS" },
+    orderBy: { startedAt: "desc" },
+  });
+  if (existing) {
+    if (existing.deadlineAt.getTime() + GRACE_MS > Date.now()) {
+      redirect(`/lam-bai/${existing.id}`);
+    }
+    // Quá hạn từ phiên trước → chốt bài với phần đã lưu
+    await finalizeAttempt(existing.id, true);
+  }
+
+  const attempt = await db.attempt.create({
+    data: {
+      userId: user.id,
+      exerciseId,
+      deadlineAt: new Date(Date.now() + exercise.durationMinutes * 60_000),
+    },
+  });
+  redirect(`/lam-bai/${attempt.id}`);
+}
+
+/** Lưu nháp trong lúc làm bài (autosave). */
+export async function saveProgressAction(attemptId: string, answersJson: string) {
+  const user = await requireUser();
+  const attempt = await db.attempt.findUnique({ where: { id: attemptId } });
+  if (!attempt || attempt.userId !== user.id || attempt.status !== "IN_PROGRESS") {
+    return { ok: false };
+  }
+  // Chống payload bất thường
+  if (answersJson.length > 200_000) return { ok: false };
+  try {
+    JSON.parse(answersJson);
+  } catch {
+    return { ok: false };
+  }
+  await db.attempt.update({
+    where: { id: attemptId },
+    data: { answers: answersJson },
+  });
+  return { ok: true };
+}
+
+/** Chốt bài: chấm Reading tự động, Writing chuyển sang chờ giáo viên chấm. */
+async function finalizeAttempt(attemptId: string, auto: boolean) {
+  const attempt = await db.attempt.findUnique({
+    where: { id: attemptId },
+    include: { exercise: true },
+  });
+  if (!attempt || attempt.status !== "IN_PROGRESS") return;
+
+  let scoreRaw: number | null = null;
+  let scoreTotal: number | null = null;
+  let status = "SUBMITTED";
+
+  if (attempt.exercise.skill === "READING") {
+    const content = JSON.parse(attempt.exercise.content) as ReadingContent;
+    const answers = JSON.parse(attempt.answers || "{}");
+    const graded = gradeReading(content, answers);
+    scoreRaw = graded.scoreRaw;
+    scoreTotal = graded.scoreTotal;
+    status = "GRADED"; // Reading chấm máy, không cần giáo viên
+  }
+
+  await db.attempt.update({
+    where: { id: attemptId },
+    data: {
+      status,
+      submittedAt: new Date(),
+      autoSubmitted: auto,
+      scoreRaw,
+      scoreTotal,
+      gradedAt: status === "GRADED" ? new Date() : null,
+    },
+  });
+}
+
+/** Học viên nộp bài (hoặc client tự nộp khi hết giờ). */
+export async function submitAttemptAction(
+  attemptId: string,
+  answersJson: string,
+  auto: boolean
+) {
+  const user = await requireUser();
+  const attempt = await db.attempt.findUnique({ where: { id: attemptId } });
+  if (!attempt || attempt.userId !== user.id) redirect("/hoc-vien");
+  if (attempt.status !== "IN_PROGRESS") redirect(`/hoc-vien/bai-lam/${attemptId}`);
+
+  // Lưu đáp án cuối cùng nếu hợp lệ và còn trong hạn (kèm dung sai)
+  const withinGrace = attempt.deadlineAt.getTime() + GRACE_MS > Date.now();
+  if (withinGrace && answersJson.length <= 200_000) {
+    try {
+      JSON.parse(answersJson);
+      await db.attempt.update({
+        where: { id: attemptId },
+        data: { answers: answersJson },
+      });
+    } catch {
+      /* giữ bản autosave gần nhất */
+    }
+  }
+
+  await finalizeAttempt(attemptId, auto || !withinGrace);
+  revalidatePath("/hoc-vien");
+  redirect(`/hoc-vien/bai-lam/${attemptId}`);
+}

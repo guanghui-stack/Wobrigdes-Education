@@ -33,6 +33,7 @@ export async function startAttemptAction(exerciseId: string) {
     data: {
       userId: user.id,
       exerciseId,
+      answers: "{}",
       deadlineAt: new Date(Date.now() + exercise.durationMinutes * 60_000),
     },
   });

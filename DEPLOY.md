@@ -1,147 +1,60 @@
-# Hướng dẫn đưa website lên GitHub và Hostinger
+# Vận hành website Wobridges trên Hostinger
 
-Website là ứng dụng **Node.js có database** (đăng nhập, làm bài, chấm điểm) nên
-**không chạy được trên gói Shared/Premium hosting thông thường** (các gói đó chỉ
-chạy PHP/file tĩnh). Bạn cần **Hostinger VPS** — gói **KVM 1** (~119.000đ/tháng)
-là đủ cho giai đoạn đầu.
+Website đang chạy theo mô hình:
 
----
-
-## Phần 1 — Đẩy code lên GitHub
-
-Đã cài [Git](https://git-scm.com/download/win) và có tài khoản GitHub? Làm theo:
-
-```bash
-# 1. Tạo repo mới trên github.com (ví dụ: wobridges) — chọn Private, KHÔNG tick "Add README"
-
-# 2. Trong thư mục dự án wobridges, chạy:
-git remote add origin https://github.com/<TÊN-TÀI-KHOẢN>/wobridges.git
-git push -u origin main
+```
+GitHub (guanghui-stack/Wobrigdes-Education)
+   │  push code → Hostinger TỰ ĐỘNG triển khai lại
+   ▼
+Hostinger "Ứng dụng web Node.js" (hPanel) ── CDN ── wobridges.com (DNS tại Vinahost)
+   │
+   ▼
+MySQL của Hostinger  ←  TOÀN BỘ dữ liệu học viên, bài làm, điểm nằm ở đây
 ```
 
-> Repo đã được khởi tạo và commit sẵn. File `.env` và database `dev.db` được
-> loại khỏi git — **không bao giờ** đưa hai file này lên GitHub.
+**Điều quan trọng nhất cần nhớ:** mỗi lần triển khai lại, Hostinger **xóa toàn
+bộ file** của lần chạy trước. Vì vậy dữ liệu phải nằm trong **database MySQL**
+(đã cấu hình) — tuyệt đối không lưu gì quan trọng vào file trên hosting.
 
----
+## Thiết lập database MySQL (làm một lần)
 
-## Phần 2 — Deploy lên Hostinger VPS
+1. Vào **hPanel → trang web wobridges.com → Cơ sở dữ liệu** (hoặc nút
+   **"Kết nối"** ở mục Yếu tố cần thiết) → tạo một database MySQL mới.
+2. Ghi lại: **host, cổng (3306), tên database, tên user, mật khẩu**.
+3. Vào **hPanel → Biến môi trường** của website, thêm biến:
+   - Tên: `DATABASE_URL`
+   - Giá trị: `mysql://TEN_USER:MAT_KHAU@HOST:3306/TEN_DATABASE`
+4. Bấm **Tái triển khai**.
 
-### Bước 1: Mua và khởi tạo VPS
+Khi khởi động, website tự tạo bảng, tự tạo tài khoản admin + bài mẫu nếu
+database trống. Không cần chạy lệnh gì.
 
-1. Vào [hostinger.vn/vps-hosting](https://www.hostinger.vn/vps-hosting), chọn **KVM 1**.
-2. Khi được hỏi hệ điều hành, chọn template **Ubuntu 24.04 with Node.js** (hoặc Ubuntu 24.04 thường).
-3. Đặt mật khẩu root và lưu lại địa chỉ IP của VPS.
+## Kiểm tra tình trạng hệ thống
 
-### Bước 2: Cài môi trường trên VPS
+Mở: **https://wobridges.com/api/health**
 
-Mở terminal (hoặc dùng Browser Terminal trong hPanel), SSH vào VPS:
+- `"initStatus": "ok"` + `"database": "ok"` → mọi thứ hoạt động
+- `"adminCount": 1` trở lên → tài khoản admin tồn tại
+- Có lỗi → gửi nguyên văn nội dung trang này cho người hỗ trợ kỹ thuật
 
-```bash
-ssh root@<IP-CỦA-VPS>
-```
+## Cập nhật website
 
-Cài Node.js 22 + PM2 + Nginx (bỏ qua bước Node nếu dùng template có sẵn):
+Chỉ cần push code lên nhánh `main` của GitHub — Hostinger tự triển khai trong
+1–2 phút (xem tiến trình ở hPanel → Triển khai). Dữ liệu trong MySQL không bị
+ảnh hưởng.
 
-```bash
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-apt install -y nodejs nginx git
-npm install -g pm2
-```
+## Sao lưu
 
-### Bước 3: Kéo code và chạy ứng dụng
+- Bật **Sao lưu hằng ngày** trong hPanel (mục Sao lưu).
+- Database có thể xuất thủ công: hPanel → Cơ sở dữ liệu → phpMyAdmin →
+  Export → định dạng SQL → lưu file về máy.
 
-```bash
-cd /var/www
-git clone https://github.com/<TÊN-TÀI-KHOẢN>/wobridges.git
-cd wobridges
-npm install
+## Tài khoản admin mặc định (chỉ tồn tại khi database mới)
 
-# Tạo file .env
-cat > .env << 'EOF'
-DATABASE_URL="file:./prod.db"
-SESSION_SECRET="DÁN_CHUỖI_NGẪU_NHIÊN_VÀO_ĐÂY"
-EOF
-# Tạo chuỗi ngẫu nhiên: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+`admin@wobridges.vn` / `Admin@Wobridges2026` — **đổi mật khẩu ngay** sau lần
+đăng nhập đầu (menu Quản trị → Đổi mật khẩu). Từ khi dùng MySQL, mật khẩu đã
+đổi sẽ được giữ vĩnh viễn qua mọi lần triển khai.
 
-# Tạo database + tài khoản admin + đề mẫu
-npx prisma db push
-node prisma/seed.mjs
+## Thêm/sửa nội dung bài tập
 
-# Build và chạy bằng PM2 (tự khởi động lại khi VPS reboot)
-npm run build
-pm2 start npm --name wobridges -- start
-pm2 save && pm2 startup
-```
-
-### Bước 4: Trỏ tên miền và cấu hình Nginx
-
-1. Trong hPanel → DNS của tên miền, tạo bản ghi **A** trỏ về IP của VPS.
-2. Trên VPS, tạo cấu hình Nginx:
-
-```bash
-cat > /etc/nginx/sites-available/wobridges << 'EOF'
-server {
-    listen 80;
-    server_name wobridges.vn www.wobridges.vn;  # đổi thành tên miền của bạn
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-EOF
-ln -s /etc/nginx/sites-available/wobridges /etc/nginx/sites-enabled/
-nginx -t && systemctl reload nginx
-```
-
-3. Cài SSL miễn phí (HTTPS):
-
-```bash
-apt install -y certbot python3-certbot-nginx
-certbot --nginx -d wobridges.vn -d www.wobridges.vn
-```
-
-### Bước 5: Sau khi chạy
-
-- Đăng nhập `https://<tên-miền>/dang-nhap` bằng `admin@wobridges.vn` /
-  `Admin@Wobridges2026` và **đổi ngay mật khẩu** (tạm thời: tự đặt lại trong
-  trang Quản lý học viên, hoặc sửa qua seed).
-- Vào **Quản trị → Bài tập** để thay đề mẫu bằng đề thật của bạn.
-
----
-
-## Cập nhật phiên bản mới
-
-Mỗi khi sửa code và push lên GitHub, vào VPS chạy:
-
-```bash
-cd /var/www/wobridges
-git pull
-npm install
-npx prisma db push   # nếu có thay đổi schema
-npm run build
-pm2 restart wobridges
-```
-
-## Sao lưu dữ liệu
-
-Toàn bộ dữ liệu (học viên, bài làm, điểm) nằm trong một file duy nhất
-`prisma/prod.db`. Sao lưu định kỳ:
-
-```bash
-# Chạy trên VPS — copy về máy của bạn
-scp root@<IP-VPS>:/var/www/wobridges/prisma/prod.db ./backup-$(date +%Y%m%d).db
-```
-
-## Khi nào cần nâng cấp?
-
-- **Trên ~500 học viên hoạt động thường xuyên**: chuyển SQLite → MySQL (Hostinger
-  VPS cài được MySQL, chỉ cần đổi `datasource` trong `prisma/schema.prisma` và
-  `DATABASE_URL`).
-- **Cần gửi email tự động** (quên mật khẩu, thông báo chấm bài): dùng SMTP đi kèm
-  Hostinger Email hoặc dịch vụ như Resend.
+Xem hướng dẫn chi tiết trong [HUONG-DAN-NOI-DUNG.md](./HUONG-DAN-NOI-DUNG.md).

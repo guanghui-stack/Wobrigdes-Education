@@ -31,6 +31,14 @@ export async function GET() {
     report.databaseError = String(err).slice(0, 400);
   }
 
+  // Khi thiếu cấu hình DB, liệt kê TÊN các biến môi trường liên quan
+  // (chỉ tên, không lộ giá trị) để chẩn đoán từ xa
+  if (!process.env.DATABASE_URL) {
+    report.dbRelatedEnvNames = Object.keys(process.env).filter((k) =>
+      /mysql|maria|database|db_/i.test(k)
+    );
+  }
+
   return NextResponse.json(report, {
     status: report.database === "ok" ? 200 : 500,
   });

@@ -1,17 +1,18 @@
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 
 /**
- * Tự động chuẩn bị mọi thứ khi server khởi động, để người vận hành
- * không cần gõ lệnh trên hosting:
- *   1. Bảo đảm DATABASE_URL và SESSION_SECRET tồn tại (tự sinh nếu thiếu,
- *      cố gắng ghi lại vào .env; nếu không ghi được thì lưu file dự phòng
- *      trong thư mục tạm để giữ ổn định giữa các lần khởi động)
- *   2. Tạo bảng database + seed admin/bài mẫu (không cần Prisma CLI)
+ * Tự động chuẩn bị mọi thứ khi server khởi động:
+ *   1. Xác định DATABASE_URL (đọc trực tiếp, từ .env, hoặc ghép từ các biến
+ *      thành phần MYSQL_* / DB_* mà Hostinger cung cấp khi kết nối database)
+ *   2. Tạo bảng MySQL + migration + seed admin/bài mẫu (không cần Prisma CLI)
+ *   3. Lấy SESSION_SECRET từ bảng Config trong database — nhờ đó phiên đăng
+ *      nhập của học viên sống qua các lần triển khai lại (file trên hosting
+ *      bị làm mới mỗi lần deploy nên không thể dựa vào .env)
  */
 export async function setupServer() {
+  const g = globalThis as { __wobridgesInit?: string };
   const root = process.cwd();
   const envPath = path.join(root, ".env");
 
@@ -19,7 +20,7 @@ export async function setupServer() {
   try {
     envText = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
   } catch {
-    /* không đọc được .env — tiếp tục với giá trị tự sinh */
+    /* không đọc được .env — bỏ qua */
   }
 
   const readFromEnvFile = (key: string): string | null => {
@@ -27,64 +28,55 @@ export async function setupServer() {
     return match ? match[1] : null;
   };
 
-  const persist = (key: string, value: string) => {
-    try {
-      fs.appendFileSync(envPath, `${key}="${value}"\n`);
-      console.log(`[wobridges] Đã lưu ${key} vào .env`);
-      return;
-    } catch {
-      /* .env không ghi được — thử file dự phòng */
+  /* ===== 1. DATABASE_URL ===== */
+  if (!process.env.DATABASE_URL) {
+    const fromFile = readFromEnvFile("DATABASE_URL");
+    if (fromFile) {
+      process.env.DATABASE_URL = fromFile;
+    } else {
+      // Ghép từ biến thành phần nếu nền tảng hosting cung cấp theo dạng đó
+      const pick = (...names: string[]) =>
+        names.map((n) => process.env[n]).find(Boolean);
+      const host = pick("MYSQL_HOST", "MYSQLHOST", "DB_HOST", "DATABASE_HOST");
+      const user = pick("MYSQL_USER", "MYSQLUSER", "DB_USER", "DB_USERNAME", "DATABASE_USER");
+      const pass = pick("MYSQL_PASSWORD", "MYSQLPASSWORD", "DB_PASSWORD", "DATABASE_PASSWORD");
+      const name = pick("MYSQL_DATABASE", "MYSQLDATABASE", "DB_NAME", "DB_DATABASE", "DATABASE_NAME");
+      const port = pick("MYSQL_PORT", "MYSQLPORT", "DB_PORT", "DATABASE_PORT") ?? "3306";
+      if (host && user && name) {
+        process.env.DATABASE_URL = `mysql://${encodeURIComponent(user)}:${encodeURIComponent(pass ?? "")}@${host}:${port}/${name}`;
+        console.log("[wobridges] Đã ghép DATABASE_URL từ biến môi trường MySQL của hosting");
+      } else {
+        g.__wobridgesInit =
+          "Thiếu DATABASE_URL — hãy tạo database MySQL trong hPanel và thêm biến môi trường DATABASE_URL";
+        console.error(`[wobridges] ${g.__wobridgesInit}`);
+        return;
+      }
     }
+  }
+
+  /* ===== 2 + 3. Khởi tạo database và SESSION_SECRET ===== */
+  if (process.env.NODE_ENV === "production") {
     try {
-      fs.writeFileSync(fallbackPath(key), value, { mode: 0o600 });
-      console.log(`[wobridges] Đã lưu ${key} vào file dự phòng (thư mục tạm)`);
-    } catch {
-      console.warn(
-        `[wobridges] Không lưu được ${key} — dùng giá trị trong bộ nhớ (sẽ đổi khi khởi động lại)`
+      console.log("[wobridges] Kiểm tra database + tài khoản admin…");
+      const { initDatabase, getOrCreateSessionSecret } = await import(
+        "./lib/init-db"
       );
+      await initDatabase();
+      if (!process.env.SESSION_SECRET) {
+        process.env.SESSION_SECRET = await getOrCreateSessionSecret();
+      }
+      g.__wobridgesInit = "ok";
+      console.log("[wobridges] Khởi tạo hoàn tất — website sẵn sàng.");
+    } catch (err) {
+      g.__wobridgesInit = String(err).slice(0, 500);
+      console.error("[wobridges] Khởi tạo database thất bại:", err);
     }
-  };
+  }
 
-  const fallbackPath = (key: string) =>
-    path.join(os.tmpdir(), `wobridges-${key.toLowerCase()}`);
-
-  const readFallback = (key: string): string | null => {
-    try {
-      const p = fallbackPath(key);
-      if (fs.existsSync(p)) return fs.readFileSync(p, "utf8").trim() || null;
-    } catch {
-      /* bỏ qua */
-    }
-    return null;
-  };
-
-  const ensureEnv = (key: string, generate: () => string) => {
-    if (process.env[key]) return;
-    const existing = readFromEnvFile(key) ?? readFallback(key);
-    if (existing) {
-      process.env[key] = existing;
-      return;
-    }
-    const value = generate();
-    process.env[key] = value;
-    persist(key, value);
-  };
-
-  ensureEnv("DATABASE_URL", () => "file:./prod.db");
-  ensureEnv("SESSION_SECRET", () => randomBytes(32).toString("hex"));
-
-  // Ở máy local (npm run dev) database đã có sẵn — chỉ tự khởi tạo trên hosting.
-  if (process.env.NODE_ENV !== "production") return;
-
-  const g = globalThis as { __wobridgesInit?: string };
-  try {
-    console.log("[wobridges] Kiểm tra database + tài khoản admin…");
-    const { initDatabase } = await import("./lib/init-db");
-    await initDatabase();
-    g.__wobridgesInit = "ok";
-    console.log("[wobridges] Khởi tạo hoàn tất — website sẵn sàng.");
-  } catch (err) {
-    g.__wobridgesInit = String(err).slice(0, 500);
-    console.error("[wobridges] Khởi tạo database thất bại:", err);
+  // Phòng hờ cuối: vẫn bảo đảm có SESSION_SECRET để đăng nhập không sập
+  // (giá trị tạm trong bộ nhớ — sẽ đổi khi khởi động lại)
+  if (!process.env.SESSION_SECRET) {
+    process.env.SESSION_SECRET =
+      readFromEnvFile("SESSION_SECRET") ?? randomBytes(32).toString("hex");
   }
 }

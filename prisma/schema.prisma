@@ -3,11 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-// SQLite không hỗ trợ enum — các trường "role", "skill", "status" dùng chuỗi quy ước:
+// Các trường "role", "skill", "status" dùng chuỗi quy ước:
 //   User.role:        STUDENT | ADMIN
 //   Exercise.skill:   READING | LISTENING | WRITING | SPEAKING
 //   Exercise.taskType: WRITING_TASK_1 | WRITING_TASK_2 | READING_PASSAGE | READING_FULL | TOPIC
@@ -38,9 +38,9 @@ model Exercise {
   skill           String
   taskType        String
   title           String
-  description     String    @default("")
+  description     String    @db.Text
   durationMinutes Int       @default(60)
-  content         String    @default("{}") // JSON: đề bài, passage, câu hỏi, đáp án
+  content         String    @db.Text // JSON: đề bài, passage, câu hỏi, đáp án
   published       Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -56,11 +56,11 @@ model Attempt {
   deadlineAt    DateTime
   submittedAt   DateTime?
   autoSubmitted Boolean   @default(false)
-  answers       String    @default("{}") // JSON: đáp án Reading hoặc bài luận Writing
+  answers       String    @db.Text // JSON: đáp án Reading hoặc bài luận Writing
   scoreRaw      Int? // Reading: số câu đúng (chấm tự động)
   scoreTotal    Int? // Reading: tổng số câu
   band          Float? // Band điểm do giáo viên chấm (Writing) hoặc quy đổi
-  feedback      String? // Nhận xét của giáo viên
+  feedback      String?   @db.Text // Nhận xét của giáo viên
   gradedAt      DateTime?
   gradedById    String?
 
@@ -69,4 +69,11 @@ model Attempt {
 
   @@index([userId, status])
   @@index([exerciseId, status])
+}
+
+// Cấu hình hệ thống bền vững (ví dụ SESSION_SECRET) — sống qua các lần deploy
+// vì file trên hosting bị làm mới mỗi lần triển khai.
+model Config {
+  key   String @id
+  value String @db.Text
 }

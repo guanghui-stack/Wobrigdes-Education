@@ -1,74 +1,87 @@
+import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import seedData from "../../prisma/seed-data.json";
 
 /**
- * Tạo bảng trực tiếp bằng SQL (tương đương `prisma db push` cho schema hiện tại)
- * — không cần Prisma CLI trên hosting. `IF NOT EXISTS` nên chạy lại vô hại.
+ * Tạo bảng trực tiếp bằng SQL MySQL (tương đương `prisma db push` cho schema
+ * hiện tại) — không cần Prisma CLI trên hosting. Index và khóa ngoại được
+ * khai báo ngay trong CREATE TABLE nên chạy lại vô hại (IF NOT EXISTS).
  */
 const DDL = [
-  `CREATE TABLE IF NOT EXISTS "User" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "email" TEXT NOT NULL,
-    "passwordHash" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "role" TEXT NOT NULL DEFAULT 'STUDENT',
-    "active" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "targetOverall" REAL,
-    "targetReading" REAL,
-    "targetListening" REAL,
-    "targetWriting" REAL,
-    "targetSpeaking" REAL,
-    "examDate" DATETIME
-  )`,
-  `CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email")`,
-  `CREATE TABLE IF NOT EXISTS "Exercise" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "skill" TEXT NOT NULL,
-    "taskType" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL DEFAULT '',
-    "durationMinutes" INTEGER NOT NULL DEFAULT 60,
-    "content" TEXT NOT NULL DEFAULT '{}',
-    "published" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-  )`,
-  `CREATE TABLE IF NOT EXISTS "Attempt" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
-    "exerciseId" TEXT NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'IN_PROGRESS',
-    "startedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "deadlineAt" DATETIME NOT NULL,
-    "submittedAt" DATETIME,
-    "autoSubmitted" BOOLEAN NOT NULL DEFAULT false,
-    "answers" TEXT NOT NULL DEFAULT '{}',
-    "scoreRaw" INTEGER,
-    "scoreTotal" INTEGER,
-    "band" REAL,
-    "feedback" TEXT,
-    "gradedAt" DATETIME,
-    "gradedById" TEXT,
-    CONSTRAINT "Attempt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Attempt_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-  )`,
-  `CREATE INDEX IF NOT EXISTS "Attempt_userId_status_idx" ON "Attempt"("userId", "status")`,
-  `CREATE INDEX IF NOT EXISTS "Attempt_exerciseId_status_idx" ON "Attempt"("exerciseId", "status")`,
+  `CREATE TABLE IF NOT EXISTS \`User\` (
+    \`id\` VARCHAR(191) NOT NULL,
+    \`email\` VARCHAR(191) NOT NULL,
+    \`passwordHash\` VARCHAR(191) NOT NULL,
+    \`name\` VARCHAR(191) NOT NULL,
+    \`role\` VARCHAR(191) NOT NULL DEFAULT 'STUDENT',
+    \`active\` BOOLEAN NOT NULL DEFAULT true,
+    \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    \`targetOverall\` DOUBLE NULL,
+    \`targetReading\` DOUBLE NULL,
+    \`targetListening\` DOUBLE NULL,
+    \`targetWriting\` DOUBLE NULL,
+    \`targetSpeaking\` DOUBLE NULL,
+    \`examDate\` DATETIME(3) NULL,
+    PRIMARY KEY (\`id\`),
+    UNIQUE INDEX \`User_email_key\` (\`email\`)
+  ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS \`Exercise\` (
+    \`id\` VARCHAR(191) NOT NULL,
+    \`skill\` VARCHAR(191) NOT NULL,
+    \`taskType\` VARCHAR(191) NOT NULL,
+    \`title\` VARCHAR(191) NOT NULL,
+    \`description\` TEXT NOT NULL,
+    \`durationMinutes\` INTEGER NOT NULL DEFAULT 60,
+    \`content\` TEXT NOT NULL,
+    \`published\` BOOLEAN NOT NULL DEFAULT true,
+    \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    \`updatedAt\` DATETIME(3) NOT NULL,
+    PRIMARY KEY (\`id\`)
+  ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS \`Attempt\` (
+    \`id\` VARCHAR(191) NOT NULL,
+    \`userId\` VARCHAR(191) NOT NULL,
+    \`exerciseId\` VARCHAR(191) NOT NULL,
+    \`status\` VARCHAR(191) NOT NULL DEFAULT 'IN_PROGRESS',
+    \`startedAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    \`deadlineAt\` DATETIME(3) NOT NULL,
+    \`submittedAt\` DATETIME(3) NULL,
+    \`autoSubmitted\` BOOLEAN NOT NULL DEFAULT false,
+    \`answers\` TEXT NOT NULL,
+    \`scoreRaw\` INTEGER NULL,
+    \`scoreTotal\` INTEGER NULL,
+    \`band\` DOUBLE NULL,
+    \`feedback\` TEXT NULL,
+    \`gradedAt\` DATETIME(3) NULL,
+    \`gradedById\` VARCHAR(191) NULL,
+    PRIMARY KEY (\`id\`),
+    INDEX \`Attempt_userId_status_idx\` (\`userId\`, \`status\`),
+    INDEX \`Attempt_exerciseId_status_idx\` (\`exerciseId\`, \`status\`),
+    CONSTRAINT \`Attempt_userId_fkey\` FOREIGN KEY (\`userId\`) REFERENCES \`User\` (\`id\`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT \`Attempt_exerciseId_fkey\` FOREIGN KEY (\`exerciseId\`) REFERENCES \`Exercise\` (\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
+  ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS \`Config\` (
+    \`key\` VARCHAR(191) NOT NULL,
+    \`value\` TEXT NOT NULL,
+    PRIMARY KEY (\`key\`)
+  ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
 ];
 
 /**
- * Migration cộng dồn cho database đã tồn tại từ phiên bản trước —
- * SQLite báo lỗi nếu cột đã có nên từng lệnh được bọc try/catch.
+ * Migration cộng dồn cho database từ phiên bản trước — MySQL báo lỗi nếu
+ * cột đã tồn tại nên từng lệnh được bọc try/catch ở nơi gọi.
  */
 const MIGRATIONS = [
-  `ALTER TABLE "User" ADD COLUMN "targetOverall" REAL`,
-  `ALTER TABLE "User" ADD COLUMN "targetReading" REAL`,
-  `ALTER TABLE "User" ADD COLUMN "targetListening" REAL`,
-  `ALTER TABLE "User" ADD COLUMN "targetWriting" REAL`,
-  `ALTER TABLE "User" ADD COLUMN "targetSpeaking" REAL`,
-  `ALTER TABLE "User" ADD COLUMN "examDate" DATETIME`,
+  `ALTER TABLE \`User\` ADD COLUMN \`targetOverall\` DOUBLE NULL`,
+  `ALTER TABLE \`User\` ADD COLUMN \`targetReading\` DOUBLE NULL`,
+  `ALTER TABLE \`User\` ADD COLUMN \`targetListening\` DOUBLE NULL`,
+  `ALTER TABLE \`User\` ADD COLUMN \`targetWriting\` DOUBLE NULL`,
+  `ALTER TABLE \`User\` ADD COLUMN \`targetSpeaking\` DOUBLE NULL`,
+  `ALTER TABLE \`User\` ADD COLUMN \`examDate\` DATETIME(3) NULL`,
 ];
 
 export async function initDatabase() {
@@ -117,4 +130,20 @@ export async function initDatabase() {
       console.log(`[wobridges] Đã tạo bài tập: ${ex.title}`);
     }
   }
+}
+
+/**
+ * SESSION_SECRET bền vững: lưu trong bảng Config của MySQL để phiên đăng nhập
+ * của học viên KHÔNG bị hủy mỗi lần triển khai lại website.
+ */
+export async function getOrCreateSessionSecret(): Promise<string> {
+  const existing = await db.config.findUnique({
+    where: { key: "SESSION_SECRET" },
+  });
+  if (existing?.value) return existing.value;
+
+  const secret = randomBytes(32).toString("hex");
+  await db.config.create({ data: { key: "SESSION_SECRET", value: secret } });
+  console.log("[wobridges] Đã tạo SESSION_SECRET mới và lưu vào database");
+  return secret;
 }

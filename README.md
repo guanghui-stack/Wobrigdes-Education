@@ -28,24 +28,21 @@ Nền tảng website + e-learning của **Trung tâm Anh ngữ Wobridges** (Worl
 | Thành phần | Lựa chọn |
 |---|---|
 | Framework | Next.js 16 (App Router, TypeScript, Turbopack) |
-| CSDL | SQLite qua Prisma 6 (dễ nâng cấp lên MySQL/PostgreSQL) |
+| CSDL | MySQL (Hostinger) qua Prisma 6 — dữ liệu bền vững qua các lần deploy |
 | Xác thực | Email + mật khẩu (bcryptjs), phiên JWT cookie (jose) |
 | Giao diện | Tailwind CSS 4, lucide-react, Google Fonts hỗ trợ tiếng Việt (Playfair Display, Source Serif 4, Be Vietnam Pro) |
 
 ## Chạy trên máy local
 
+Cần một database MySQL (cài local, hoặc dùng database dev riêng trên Hostinger
+có bật remote access). Sau đó:
+
 ```bash
 npm install
-npx prisma db push        # tạo database SQLite
+# tạo file .env theo .env.example, điền DATABASE_URL của MySQL
+npx prisma db push        # tạo bảng
 node prisma/seed.mjs      # tạo tài khoản admin + bài tập mẫu
 npm run dev               # http://localhost:3000
-```
-
-File `.env` cần hai biến (xem `.env.example`):
-
-```
-DATABASE_URL="file:./dev.db"
-SESSION_SECRET="<chuỗi ngẫu nhiên 64 ký tự hex>"
 ```
 
 **Tài khoản admin mặc định sau khi seed:** `admin@wobridges.vn` / `Admin@Wobridges2026`

@@ -5,7 +5,6 @@ import {
   PenLine,
   Hourglass,
   CheckCircle2,
-  ArrowRight,
   LogOut,
   KeyRound,
   RotateCcw,
@@ -14,12 +13,38 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { logoutAction } from "@/lib/actions/auth";
 import { ButtonLink, NoteBox } from "@/components/ui";
+import { GoalsCard } from "@/components/student/goals-card";
+import { StudyCalendar } from "@/components/student/study-calendar";
+import { WeeklyStats, type WeeklyRow } from "@/components/student/weekly-stats";
+import { HistoryTabs, type HistoryItem } from "@/components/student/history-tabs";
 
 export const metadata: Metadata = { title: "Hồ sơ học tập" };
 
+const VN_TZ = "Asia/Ho_Chi_Minh";
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Khóa ngày dạng yyyy-mm-dd theo giờ Việt Nam. */
+function dateKey(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: VN_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
+function keyToLabel(key: string): string {
+  const [y, m, d] = key.split("-");
+  return `${d}/${m}/${y}`;
+}
+
 function fmt(d: Date | null) {
   if (!d) return "—";
-  return d.toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" });
+  return d.toLocaleString("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: VN_TZ,
+  });
 }
 
 export default async function StudentDashboard() {
@@ -43,6 +68,81 @@ export default async function StudentDashboard() {
     const pct = (a.scoreRaw / a.scoreTotal) * 100;
     return best == null || pct > best ? pct : best;
   }, null);
+
+  /* ===== Lịch chuyên cần (tháng hiện tại, giờ VN) ===== */
+  const now = new Date();
+  const todayKey = dateKey(now);
+  const [ty, tm, td] = todayKey.split("-").map(Number);
+  const monthPrefix = todayKey.slice(0, 8); // "yyyy-mm-"
+  const daysInMonth = new Date(ty, tm, 0).getDate();
+  // Thứ của ngày 1 (lấy mốc 12:00 giờ VN để tránh lệch múi giờ)
+  const firstWeekday = new Date(`${monthPrefix}01T12:00:00+07:00`).getUTCDay();
+  const offset = (firstWeekday + 6) % 7; // tuần bắt đầu Thứ 2
+  const monthLabel = `Tháng ${String(tm).padStart(2, "0")} / ${ty}`;
+
+  const activeDays = [
+    ...new Set(
+      finished
+        .filter((a) => a.submittedAt)
+        .map((a) => dateKey(a.submittedAt!))
+        .filter((k) => k.startsWith(monthPrefix))
+        .map((k) => Number(k.slice(8)))
+    ),
+  ];
+
+  /* ===== Thống kê 7 ngày gần nhất ===== */
+  const weekKeys: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    weekKeys.push(dateKey(new Date(now.getTime() - i * DAY_MS)));
+  }
+  const weeklyRows: WeeklyRow[] = weekKeys.map((key) => {
+    const dayAttempts = finished.filter(
+      (a) => a.submittedAt && dateKey(a.submittedAt) === key
+    );
+    const minutes = dayAttempts.reduce((sum, a) => {
+      const spent = Math.round(
+        (a.submittedAt!.getTime() - a.startedAt.getTime()) / 60000
+      );
+      return sum + Math.min(Math.max(spent, 1), a.exercise.durationMinutes);
+    }, 0);
+    return {
+      label: keyToLabel(key),
+      r: dayAttempts.filter((a) => a.exercise.skill === "READING").length,
+      l: dayAttempts.filter((a) => a.exercise.skill === "LISTENING").length,
+      w: dayAttempts.filter((a) => a.exercise.skill === "WRITING").length,
+      s: dayAttempts.filter((a) => a.exercise.skill === "SPEAKING").length,
+      minutes,
+    };
+  });
+
+  /* ===== Lịch thi ===== */
+  const examKey = user.examDate ? dateKey(user.examDate) : null;
+  let daysLeft: number | null = null;
+  if (examKey) {
+    const toUtc = (k: string) => Date.parse(`${k}T00:00:00Z`);
+    daysLeft = Math.round((toUtc(examKey) - toUtc(todayKey)) / DAY_MS);
+  }
+
+  /* ===== Lịch sử theo tab ===== */
+  const historyItems: HistoryItem[] = finished.map((a) => ({
+    id: a.id,
+    title: a.exercise.title,
+    skill: a.exercise.skill as HistoryItem["skill"],
+    submittedAtLabel: fmt(a.submittedAt),
+    resultKind:
+      a.exercise.skill === "READING"
+        ? "score"
+        : a.status === "GRADED" && a.band != null
+          ? "band"
+          : "pending",
+    resultLabel:
+      a.exercise.skill === "READING"
+        ? `${a.scoreRaw}/${a.scoreTotal}`
+        : a.status === "GRADED" && a.band != null
+          ? a.band.toFixed(1)
+          : "Chờ chấm",
+    href: `/hoc-vien/bai-lam/${a.id}`,
+  }));
 
   return (
     <>
@@ -77,8 +177,22 @@ export default async function StudentDashboard() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-12">
-        {/* Thống kê */}
+      <section className="mx-auto max-w-6xl space-y-8 px-6 py-12">
+        {/* Mục tiêu + lịch thi */}
+        <GoalsCard
+          targets={{
+            overall: user.targetOverall,
+            reading: user.targetReading,
+            listening: user.targetListening,
+            writing: user.targetWriting,
+            speaking: user.targetSpeaking,
+          }}
+          examDateValue={examKey ?? ""}
+          examDateLabel={examKey ? keyToLabel(examKey) : "—"}
+          daysLeft={daysLeft}
+        />
+
+        {/* Thống kê tổng */}
         <div className="grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           <div className="bg-paper p-6">
             <p className="label-caps flex items-center gap-2">
@@ -120,107 +234,60 @@ export default async function StudentDashboard() {
 
         {/* Bài đang làm dở */}
         {inProgress.length > 0 && (
-          <div className="mt-10">
-            <h2 className="font-display text-2xl font-bold text-navy-deep">
-              Bài đang làm dở
-            </h2>
-            <div className="mt-5 space-y-4">
-              {inProgress.map((a) => (
-                <div
-                  key={a.id}
-                  className="flex flex-wrap items-center justify-between gap-4 border-l-4 border-gold bg-cream-deep px-6 py-4"
-                >
-                  <div>
-                    <p className="font-ui font-semibold text-ink">{a.exercise.title}</p>
-                    <p className="mt-1 font-ui text-sm text-ink-soft">
-                      Hạn nộp: {fmt(a.deadlineAt)} — đồng hồ vẫn đang chạy!
-                    </p>
-                  </div>
-                  <Link
-                    href={`/lam-bai/${a.id}`}
-                    className="flex items-center gap-2 border border-gold bg-gold px-5 py-2 font-ui text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-paper hover:bg-[#9d7223]"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                    Tiếp tục làm
-                  </Link>
+          <div className="space-y-4">
+            {inProgress.map((a) => (
+              <div
+                key={a.id}
+                className="flex flex-wrap items-center justify-between gap-4 border-l-4 border-gold bg-cream-deep px-6 py-4"
+              >
+                <div>
+                  <p className="font-ui font-semibold text-ink">{a.exercise.title}</p>
+                  <p className="mt-1 font-ui text-sm text-ink-soft">
+                    Hạn nộp: {fmt(a.deadlineAt)} — đồng hồ vẫn đang chạy!
+                  </p>
                 </div>
-              ))}
-            </div>
+                <Link
+                  href={`/lam-bai/${a.id}`}
+                  className="flex items-center gap-2 border border-gold bg-gold px-5 py-2 font-ui text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-paper hover:bg-[#9d7223]"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                  Tiếp tục làm
+                </Link>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Lịch sử bài làm */}
-        <div className="mt-10">
-          <h2 className="font-display text-2xl font-bold text-navy-deep">
-            Lịch sử bài làm
-          </h2>
-          {finished.length === 0 ? (
-            <NoteBox className="mt-5" title="Chưa có bài làm nào">
-              Hãy bắt đầu với một bài Reading để làm quen với áp lực thời gian,
-              hoặc thử sức với đề Writing Task 2.{" "}
-              <Link
-                href="/luyen-tap"
-                className="font-semibold text-navy underline decoration-gold decoration-2 underline-offset-4"
-              >
-                Vào phòng luyện tập
-              </Link>
-              .
-            </NoteBox>
-          ) : (
-            <div className="mt-5 overflow-x-auto">
-              <table className="w-full min-w-[640px] border border-line font-ui text-sm">
-                <thead>
-                  <tr className="bg-navy text-paper">
-                    <th className="px-4 py-3 text-left font-semibold">Bài tập</th>
-                    <th className="px-4 py-3 text-left font-semibold">Kỹ năng</th>
-                    <th className="px-4 py-3 text-left font-semibold">Nộp lúc</th>
-                    <th className="px-4 py-3 text-center font-semibold">Kết quả</th>
-                    <th className="px-4 py-3 text-right font-semibold">Chi tiết</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {finished.map((a) => (
-                    <tr key={a.id} className="bg-paper transition-colors hover:bg-cream">
-                      <td className="max-w-[280px] truncate px-4 py-3 font-semibold text-ink">
-                        {a.exercise.title}
-                      </td>
-                      <td className="px-4 py-3 text-ink-soft">
-                        {a.exercise.skill === "READING" ? "Reading" : "Writing"}
-                      </td>
-                      <td className="px-4 py-3 tabular-nums text-ink-soft">
-                        {fmt(a.submittedAt)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {a.exercise.skill === "READING" ? (
-                          <span className="font-semibold tabular-nums text-navy-deep">
-                            {a.scoreRaw}/{a.scoreTotal}
-                          </span>
-                        ) : a.status === "GRADED" && a.band != null ? (
-                          <span className="border border-gold bg-gold-pale px-2 py-0.5 font-bold text-navy-deep">
-                            {a.band.toFixed(1)}
-                          </span>
-                        ) : (
-                          <span className="text-gold">Chờ chấm</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/hoc-vien/bai-lam/${a.id}`}
-                          className="inline-flex items-center gap-1 font-semibold text-navy hover:text-gold"
-                        >
-                          Xem
-                          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        {/* Lịch chuyên cần + thống kê tuần */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <StudyCalendar
+            monthLabel={monthLabel}
+            offset={offset}
+            daysInMonth={daysInMonth}
+            activeDays={activeDays}
+            today={td}
+          />
+          <WeeklyStats rows={weeklyRows} />
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-3">
+        {/* Lịch sử theo tab kỹ năng */}
+        {finished.length === 0 ? (
+          <NoteBox title="Chưa có bài làm nào">
+            Hãy bắt đầu với một bài Reading để làm quen với áp lực thời gian,
+            hoặc thử sức với đề Writing Task 2.{" "}
+            <Link
+              href="/luyen-tap"
+              className="font-semibold text-navy underline decoration-gold decoration-2 underline-offset-4"
+            >
+              Vào phòng luyện tập
+            </Link>
+            .
+          </NoteBox>
+        ) : (
+          <HistoryTabs items={historyItems} />
+        )}
+
+        <div className="flex flex-wrap gap-3">
           <ButtonLink href="/luyen-tap/reading" variant="primary">
             Luyện Reading
           </ButtonLink>

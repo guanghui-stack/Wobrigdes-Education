@@ -1,10 +1,58 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 
 export type AccountFormState = { error?: string; success?: string } | undefined;
+
+/** Đọc band điểm từ form: rỗng → null; hợp lệ 0–9, bước 0.5. */
+function parseBand(raw: FormDataEntryValue | null): number | null | "invalid" {
+  const s = String(raw ?? "").trim().replace(",", ".");
+  if (!s) return null;
+  const n = Number(s);
+  if (!Number.isFinite(n) || n < 0 || n > 9 || (n * 2) % 1 !== 0) return "invalid";
+  return n;
+}
+
+/** Học viên cập nhật mục tiêu band điểm và ngày dự thi. */
+export async function updateGoalsAction(
+  _prev: AccountFormState,
+  formData: FormData
+): Promise<AccountFormState> {
+  const user = await requireUser();
+
+  const fields = [
+    "targetOverall",
+    "targetReading",
+    "targetListening",
+    "targetWriting",
+    "targetSpeaking",
+  ] as const;
+
+  const data: Record<string, number | null | Date> = {};
+  for (const f of fields) {
+    const v = parseBand(formData.get(f));
+    if (v === "invalid") {
+      return { error: "Band điểm phải từ 0 đến 9, bước nhảy 0.5 (ví dụ 6.5)." };
+    }
+    data[f] = v;
+  }
+
+  const examRaw = String(formData.get("examDate") ?? "").trim();
+  if (examRaw) {
+    const d = new Date(`${examRaw}T00:00:00+07:00`);
+    if (Number.isNaN(d.getTime())) return { error: "Ngày dự thi không hợp lệ." };
+    data.examDate = d;
+  } else {
+    data.examDate = null;
+  }
+
+  await db.user.update({ where: { id: user.id }, data });
+  revalidatePath("/hoc-vien");
+  return { success: "Đã lưu mục tiêu của bạn." };
+}
 
 /** Người dùng (học viên hoặc admin) tự đổi mật khẩu của mình. */
 export async function changePasswordAction(

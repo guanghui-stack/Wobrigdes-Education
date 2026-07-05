@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { LogOut } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
+import { logoutAction } from "@/lib/actions/auth";
 
 const TABS = [
   { href: "/quan-tri", label: "Tổng quan" },
@@ -22,7 +24,7 @@ export default async function AdminLayout({
           <p className="font-ui text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-gold-soft">
             Khu vực quản trị · Wobridges
           </p>
-          <nav aria-label="Quản trị" className="flex flex-wrap gap-1">
+          <nav aria-label="Quản trị" className="flex flex-wrap items-center gap-1">
             {TABS.map((t) => (
               <Link
                 key={t.href}
@@ -32,6 +34,15 @@ export default async function AdminLayout({
                 {t.label}
               </Link>
             ))}
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="ml-2 flex cursor-pointer items-center gap-1.5 border border-cream/30 px-4 py-1.5 font-ui text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-cream/80 transition-colors hover:border-gold-soft hover:text-gold-soft"
+              >
+                <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                Đăng xuất
+              </button>
+            </form>
           </nav>
         </div>
       </div>

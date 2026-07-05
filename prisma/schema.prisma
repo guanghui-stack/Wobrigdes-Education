@@ -21,7 +21,16 @@ model User {
   role         String    @default("STUDENT")
   active       Boolean   @default(true)
   createdAt    DateTime  @default(now())
-  attempts     Attempt[]
+
+  // Mục tiêu band điểm và lịch thi do học viên tự đặt
+  targetOverall   Float?
+  targetReading   Float?
+  targetListening Float?
+  targetWriting   Float?
+  targetSpeaking  Float?
+  examDate        DateTime?
+
+  attempts Attempt[]
 }
 
 model Exercise {

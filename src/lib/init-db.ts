@@ -14,7 +14,13 @@ const DDL = [
     "name" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'STUDENT',
     "active" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "targetOverall" REAL,
+    "targetReading" REAL,
+    "targetListening" REAL,
+    "targetWriting" REAL,
+    "targetSpeaking" REAL,
+    "examDate" DATETIME
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email")`,
   `CREATE TABLE IF NOT EXISTS "Exercise" (
@@ -52,9 +58,30 @@ const DDL = [
   `CREATE INDEX IF NOT EXISTS "Attempt_exerciseId_status_idx" ON "Attempt"("exerciseId", "status")`,
 ];
 
+/**
+ * Migration cộng dồn cho database đã tồn tại từ phiên bản trước —
+ * SQLite báo lỗi nếu cột đã có nên từng lệnh được bọc try/catch.
+ */
+const MIGRATIONS = [
+  `ALTER TABLE "User" ADD COLUMN "targetOverall" REAL`,
+  `ALTER TABLE "User" ADD COLUMN "targetReading" REAL`,
+  `ALTER TABLE "User" ADD COLUMN "targetListening" REAL`,
+  `ALTER TABLE "User" ADD COLUMN "targetWriting" REAL`,
+  `ALTER TABLE "User" ADD COLUMN "targetSpeaking" REAL`,
+  `ALTER TABLE "User" ADD COLUMN "examDate" DATETIME`,
+];
+
 export async function initDatabase() {
   for (const stmt of DDL) {
     await db.$executeRawUnsafe(stmt);
+  }
+
+  for (const stmt of MIGRATIONS) {
+    try {
+      await db.$executeRawUnsafe(stmt);
+    } catch {
+      /* cột đã tồn tại — bỏ qua */
+    }
   }
 
   // Seed admin + bài tập mẫu từ JSON đóng gói kèm ứng dụng

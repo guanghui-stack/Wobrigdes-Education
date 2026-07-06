@@ -107,22 +107,44 @@ function parseExerciseForm(formData: FormData): {
     const contentRaw = String(formData.get("content") ?? "").trim();
     try {
       const parsed = JSON.parse(contentRaw);
-      if (!parsed.passage?.title || !Array.isArray(parsed.passage?.paragraphs)) {
-        return { error: "JSON thiếu passage.title hoặc passage.paragraphs." };
+      // Chấp nhận cả 2 dạng: { parts: [...] } (mới, 1–3 part) và
+      // { passage, questionGroups } (dạng cũ, 1 passage)
+      const parts = Array.isArray(parsed.parts)
+        ? parsed.parts
+        : parsed.passage && parsed.questionGroups
+          ? [parsed]
+          : null;
+      if (!parts || parts.length === 0) {
+        return { error: "JSON cần có mảng \"parts\" (hoặc passage + questionGroups)." };
       }
-      if (!Array.isArray(parsed.questionGroups) || parsed.questionGroups.length === 0) {
-        return { error: "JSON thiếu questionGroups." };
+      if (parts.length > 3) {
+        return { error: "Tối đa 3 part cho một bài Reading (giống đề thi thật)." };
       }
-      for (const g of parsed.questionGroups) {
-        if (!["TFNG", "MC", "GAP"].includes(g.type)) {
-          return { error: `Loại câu hỏi không hỗ trợ: ${g.type} (dùng TFNG, MC, GAP).` };
+      const seenIds = new Set<string>();
+      for (let pi = 0; pi < parts.length; pi++) {
+        const part = parts[pi];
+        const label = `Part ${pi + 1}`;
+        if (!part.passage?.title || !Array.isArray(part.passage?.paragraphs)) {
+          return { error: `${label}: thiếu passage.title hoặc passage.paragraphs.` };
         }
-        if (!Array.isArray(g.questions) || g.questions.length === 0) {
-          return { error: "Mỗi questionGroup cần ít nhất 1 câu hỏi." };
+        if (!Array.isArray(part.questionGroups) || part.questionGroups.length === 0) {
+          return { error: `${label}: thiếu questionGroups.` };
         }
-        for (const q of g.questions) {
-          if (!q.id || !q.prompt || !q.answer) {
-            return { error: "Mỗi câu hỏi cần đủ id, prompt và answer." };
+        for (const g of part.questionGroups) {
+          if (!["TFNG", "MC", "GAP"].includes(g.type)) {
+            return { error: `${label}: loại câu hỏi không hỗ trợ: ${g.type} (dùng TFNG, MC, GAP).` };
+          }
+          if (!Array.isArray(g.questions) || g.questions.length === 0) {
+            return { error: `${label}: mỗi questionGroup cần ít nhất 1 câu hỏi.` };
+          }
+          for (const q of g.questions) {
+            if (!q.id || !q.prompt || !q.answer) {
+              return { error: `${label}: mỗi câu hỏi cần đủ id, prompt và answer.` };
+            }
+            if (seenIds.has(q.id)) {
+              return { error: `Trùng id câu hỏi "${q.id}" — id phải duy nhất trong TOÀN BỘ đề (kể cả giữa các part).` };
+            }
+            seenIds.add(q.id);
           }
         }
       }

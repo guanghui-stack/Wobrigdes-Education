@@ -62,21 +62,36 @@ Tick **"Mở cho học viên làm ngay"** → bấm **Tạo bài tập**. Xong!
 có cấu trúc (JSON). Đừng lo — khi bạn bấm Tạo bài tập mới và chọn Kỹ năng =
 **Reading**, ô nội dung đã có sẵn **bộ khung mẫu**, bạn chỉ thay nội dung vào.
 
-### Cấu trúc tổng thể
+### Cấu trúc tổng thể — đề gồm 1 đến 3 part (giống đề thi thật)
 
 ```json
 {
-  "passage": {
-    "title": "Tiêu đề bài đọc",
-    "paragraphs": [
-      "Đoạn văn thứ nhất...",
-      "Đoạn văn thứ hai...",
-      "Mỗi đoạn là một dòng trong cặp ngoặc vuông, bọc trong nháy kép, cách nhau dấu phẩy"
-    ]
-  },
-  "questionGroups": [ ...các nhóm câu hỏi... ]
+  "parts": [
+    {
+      "passage": {
+        "title": "Tiêu đề bài đọc Part 1",
+        "paragraphs": [
+          "Đoạn văn thứ nhất...",
+          "Đoạn văn thứ hai...",
+          "Mỗi đoạn là một dòng trong cặp ngoặc vuông, bọc trong nháy kép, cách nhau dấu phẩy"
+        ]
+      },
+      "questionGroups": [ ...các nhóm câu hỏi của Part 1... ]
+    },
+    {
+      "passage": { ...Part 2... },
+      "questionGroups": [ ... ]
+    }
+  ]
 }
 ```
+
+> Muốn đề chỉ có 1 passage thì mảng `parts` chỉ chứa 1 phần tử. Muốn đề thi
+> thử hoàn chỉnh thì thêm 3 phần tử. Học viên sẽ thấy thanh chuyển Part 1/2/3
+> dưới màn hình làm bài, đúng như phần mềm thi thật.
+>
+> **Quan trọng:** `id` câu hỏi phải duy nhất trong TOÀN BỘ đề và nên đánh liên
+> tục xuyên part: Part 1 dùng q1–q13, Part 2 dùng q14–q26, Part 3 dùng q27–q40.
 
 ### Ba loại nhóm câu hỏi được hỗ trợ
 

@@ -10,47 +10,51 @@ import {
 import { ErrorBanner, SubmitButton } from "@/components/ui";
 
 const READING_TEMPLATE = `{
-  "passage": {
-    "title": "Tiêu đề passage",
-    "paragraphs": [
-      "Đoạn văn thứ nhất…",
-      "Đoạn văn thứ hai…"
-    ]
-  },
-  "questionGroups": [
+  "parts": [
     {
-      "type": "TFNG",
-      "instruction": "Do the following statements agree with the information in the passage?",
-      "questions": [
+      "passage": {
+        "title": "Tiêu đề passage Part 1",
+        "paragraphs": [
+          "Đoạn văn thứ nhất…",
+          "Đoạn văn thứ hai…"
+        ]
+      },
+      "questionGroups": [
         {
-          "id": "q1",
-          "prompt": "Nội dung câu khẳng định…",
-          "options": ["TRUE", "FALSE", "NOT GIVEN"],
-          "answer": "TRUE"
-        }
-      ]
-    },
-    {
-      "type": "MC",
-      "instruction": "Choose the correct letter, A, B, C or D.",
-      "questions": [
+          "type": "TFNG",
+          "instruction": "Do the following statements agree with the information in the passage?",
+          "questions": [
+            {
+              "id": "q1",
+              "prompt": "Nội dung câu khẳng định…",
+              "options": ["TRUE", "FALSE", "NOT GIVEN"],
+              "answer": "TRUE"
+            }
+          ]
+        },
         {
-          "id": "q2",
-          "prompt": "Câu hỏi…",
-          "options": ["A. Lựa chọn 1", "B. Lựa chọn 2", "C. Lựa chọn 3", "D. Lựa chọn 4"],
-          "answer": "B"
-        }
-      ]
-    },
-    {
-      "type": "GAP",
-      "instruction": "Complete the sentences. Write NO MORE THAN TWO WORDS.",
-      "questions": [
+          "type": "MC",
+          "instruction": "Choose the correct letter, A, B, C or D.",
+          "questions": [
+            {
+              "id": "q2",
+              "prompt": "Câu hỏi…",
+              "options": ["A. Lựa chọn 1", "B. Lựa chọn 2", "C. Lựa chọn 3", "D. Lựa chọn 4"],
+              "answer": "B"
+            }
+          ]
+        },
         {
-          "id": "q3",
-          "prompt": "Câu có chỗ trống ______ cần điền.",
-          "answer": "đáp án",
-          "altAnswers": ["biến thể chấp nhận được"]
+          "type": "GAP",
+          "instruction": "Complete the sentences. Write NO MORE THAN TWO WORDS.",
+          "questions": [
+            {
+              "id": "q3",
+              "prompt": "Câu có chỗ trống ______ cần điền.",
+              "answer": "đáp án",
+              "altAnswers": ["biến thể chấp nhận được"]
+            }
+          ]
         }
       ]
     }
@@ -252,11 +256,13 @@ export function ExerciseForm({
             className={`${inputCls} resize-y font-mono text-[0.82rem] leading-relaxed`}
           />
           <p className="mt-1.5 font-ui text-xs leading-relaxed text-muted">
-            Ba loại câu hỏi được hỗ trợ: <strong>TFNG</strong> (TRUE/FALSE/NOT
-            GIVEN), <strong>MC</strong> (trắc nghiệm A–D, đáp án là chữ cái),{" "}
-            <strong>GAP</strong> (điền từ — thêm &quot;altAnswers&quot; cho các
-            biến thể được chấp nhận). Mỗi câu cần &quot;id&quot; duy nhất (q1,
-            q2…).
+            Đề gồm 1–3 <strong>part</strong> (thêm phần tử vào mảng
+            &quot;parts&quot; để có Part 2, 3 — giống đề thi thật). Ba loại câu
+            hỏi: <strong>TFNG</strong> (TRUE/FALSE/NOT GIVEN),{" "}
+            <strong>MC</strong> (trắc nghiệm A–D, đáp án là chữ cái),{" "}
+            <strong>GAP</strong> (điền từ — thêm &quot;altAnswers&quot; cho biến
+            thể được chấp nhận). Mỗi câu cần &quot;id&quot; duy nhất trong{" "}
+            <strong>toàn bộ đề</strong> (q1, q2… đánh liên tục xuyên part).
           </p>
         </div>
       )}

@@ -17,9 +17,23 @@ export type ReadingQuestionGroup = {
   questions: ReadingQuestion[];
 };
 
-export type ReadingContent = {
-  passage: { title: string; paragraphs: string[] };
+export type ReadingPassage = { title: string; paragraphs: string[] };
+
+/** Một part của bài thi (giống Part 1/2/3 trong đề thật). */
+export type ReadingPart = {
+  passage: ReadingPassage;
   questionGroups: ReadingQuestionGroup[];
+};
+
+/**
+ * Nội dung đề Reading — hỗ trợ 2 dạng:
+ *  - Dạng mới:  { parts: [{passage, questionGroups}, …] } (1–3 part)
+ *  - Dạng cũ:   { passage, questionGroups } (1 passage — các đề đã tạo trước)
+ */
+export type ReadingContent = {
+  parts?: ReadingPart[];
+  passage?: ReadingPassage;
+  questionGroups?: ReadingQuestionGroup[];
 };
 
 export type WritingContent = {
@@ -34,14 +48,27 @@ export type WritingContent = {
   };
 };
 
-export type ReadingAnswers = Record<string, string>;
+/**
+ * Đáp án Reading: qid → giá trị. Khóa đặc biệt "__marked" lưu danh sách
+ * câu học viên đánh dấu xem lại (không tham gia chấm điểm).
+ */
+export type ReadingAnswers = Record<string, string | string[]>;
 export type WritingAnswers = { essay: string; wordCount: number };
 
+/** Quy mọi đề Reading về dạng parts[] thống nhất. */
+export function normalizeReadingParts(content: ReadingContent): ReadingPart[] {
+  if (content.parts && content.parts.length > 0) return content.parts;
+  if (content.passage && content.questionGroups) {
+    return [{ passage: content.passage, questionGroups: content.questionGroups }];
+  }
+  return [];
+}
+
 /** Loại bỏ đáp án trước khi gửi đề sang trình duyệt học viên. */
-export function sanitizeReadingContent(content: ReadingContent): ReadingContent {
-  return {
-    passage: content.passage,
-    questionGroups: content.questionGroups.map((g) => ({
+export function sanitizeReadingParts(content: ReadingContent): ReadingPart[] {
+  return normalizeReadingParts(content).map((part) => ({
+    passage: part.passage,
+    questionGroups: part.questionGroups.map((g) => ({
       type: g.type,
       instruction: g.instruction,
       questions: g.questions.map(({ id, prompt, options }) => ({
@@ -50,7 +77,7 @@ export function sanitizeReadingContent(content: ReadingContent): ReadingContent 
         options,
       })),
     })),
-  };
+  }));
 }
 
 function normalize(s: string): string {
@@ -73,6 +100,7 @@ export type GradedQuestion = {
   id: string;
   prompt: string;
   type: ReadingQuestionGroup["type"];
+  part: number; // 1-based
   userAnswer: string;
   correctAnswer: string;
   correct: boolean;
@@ -83,29 +111,34 @@ export function gradeReading(
   answers: ReadingAnswers
 ): { scoreRaw: number; scoreTotal: number; detail: GradedQuestion[] } {
   const detail: GradedQuestion[] = [];
-  for (const group of content.questionGroups) {
-    for (const q of group.questions) {
-      const userAnswer = (answers[q.id] ?? "").toString();
-      let correct = false;
-      if (group.type === "GAP") {
-        correct = gapMatches(userAnswer, q);
-      } else if (group.type === "MC") {
-        // Đáp án MC lưu dạng chữ cái ("B"); lựa chọn dạng "B. Nội dung…"
-        const letter = userAnswer.trim().charAt(0).toUpperCase();
-        correct = letter === (q.answer ?? "").trim().charAt(0).toUpperCase();
-      } else {
-        correct = normalize(userAnswer) === normalize(q.answer ?? "");
+  const parts = normalizeReadingParts(content);
+  parts.forEach((part, partIdx) => {
+    for (const group of part.questionGroups) {
+      for (const q of group.questions) {
+        const raw = answers[q.id];
+        const userAnswer = typeof raw === "string" ? raw : "";
+        let correct = false;
+        if (group.type === "GAP") {
+          correct = gapMatches(userAnswer, q);
+        } else if (group.type === "MC") {
+          // Đáp án MC lưu dạng chữ cái ("B"); lựa chọn dạng "B. Nội dung…"
+          const letter = userAnswer.trim().charAt(0).toUpperCase();
+          correct = letter === (q.answer ?? "").trim().charAt(0).toUpperCase();
+        } else {
+          correct = normalize(userAnswer) === normalize(q.answer ?? "");
+        }
+        detail.push({
+          id: q.id,
+          prompt: q.prompt,
+          type: group.type,
+          part: partIdx + 1,
+          userAnswer,
+          correctAnswer: q.answer ?? "",
+          correct,
+        });
       }
-      detail.push({
-        id: q.id,
-        prompt: q.prompt,
-        type: group.type,
-        userAnswer,
-        correctAnswer: q.answer ?? "",
-        correct,
-      });
     }
-  }
+  });
   return {
     scoreRaw: detail.filter((d) => d.correct).length,
     scoreTotal: detail.length,

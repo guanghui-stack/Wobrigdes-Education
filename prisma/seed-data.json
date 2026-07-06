@@ -424,6 +424,459 @@
         "prompt": "In many countries, secondary school students are required to learn a foreign language as part of the national curriculum.\n\nTo what extent do you agree or disagree with this policy?\n\nGive reasons for your answer and include any relevant examples from your own knowledge or experience.",
         "guidance": "Viết tối thiểu 250 từ trong khoảng 40 phút. Chọn rõ mức độ đồng ý và bảo vệ nhất quán xuyên suốt bài."
       }
+    },
+    {
+      "skill": "READING",
+      "taskType": "READING_FULL",
+      "title": "Reading Full Test 01 — 3 Passages",
+      "description": "Đề thi thử hoàn chỉnh: 3 passages · 38 câu hỏi · 60 phút · giao diện mô phỏng thi máy (chuyển part, đánh dấu câu, highlight).",
+      "durationMinutes": 60,
+      "content": {
+        "parts": [
+          {
+            "passage": {
+              "title": "The Story of Bridges",
+              "paragraphs": [
+                "Few structures embody human ambition as clearly as the bridge. From the first fallen log laid across a stream to the steel giants that now span entire bays, bridges have always served a single, elegant purpose: to connect what nature has kept apart. Historians believe that the earliest deliberate bridges were built more than three thousand years ago, when communities in Mesopotamia and China began laying timber beams over rivers to link farmland with markets.",
+                "The Romans transformed bridge-building from a craft into a science. By perfecting the semicircular stone arch, they created crossings of astonishing durability; several Roman bridges, such as the Alcántara Bridge in Spain, still carry traffic today, almost two thousand years after they were completed. Roman engineers also invented a form of concrete that could harden underwater, allowing them to sink foundations directly into riverbeds. Their achievements were so advanced that European bridge design barely changed for the next thousand years.",
+                "The Industrial Revolution rewrote the rules. Iron, and later steel, allowed engineers to build longer, lighter and far more daring structures. The world's first major iron bridge was erected at Coalbrookdale in England in 1779, and its success signalled the end of stone's long dominance. In the nineteenth century, the suspension bridge emerged as the champion of great distances: by hanging the roadway from cables strung between tall towers, engineers could leap across gorges and estuaries that had once seemed impossible to span.",
+                "The twentieth century brought both triumph and tragedy. The Golden Gate Bridge, opened in San Francisco in 1937, became an icon of modern engineering with its 1,280-metre main span. Yet only three years later, the Tacoma Narrows Bridge in Washington State twisted itself apart in moderate winds, a failure captured on film and studied by engineering students ever since. The disaster taught designers a lasting lesson: a bridge must be tested not only against weight, but against the invisible forces of wind and resonance.",
+                "Today, the frontier of bridge-building lies in Asia. China alone has constructed more than a million bridges, including the Danyang–Kunshan Grand Bridge, which stretches 165 kilometres and is currently the longest bridge on Earth. Modern designers combine high-performance concrete, wind-tunnel modelling and computer simulation to create structures that their Roman predecessors could scarcely have imagined. Some experimental designs even generate their own electricity through solar panels embedded in the road surface.",
+                "Yet for all this technology, the meaning of the bridge has never changed. Anthropologists note that in almost every culture, the bridge appears as a symbol of connection, opportunity and passage from one stage of life to another. To build a bridge, physically or otherwise, is to declare that separation is temporary and that the other side is worth reaching. It is perhaps for this reason that the bridge, more than any other structure, continues to capture the human imagination."
+              ]
+            },
+            "questionGroups": [
+              {
+                "type": "TFNG",
+                "instruction": "Do the following statements agree with the information given in the passage? Choose TRUE if the statement agrees with the information, FALSE if the statement contradicts the information, or NOT GIVEN if there is no information on this.",
+                "questions": [
+                  {
+                    "id": "q1",
+                    "prompt": "The earliest bridges were built primarily for military purposes.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "NOT GIVEN"
+                  },
+                  {
+                    "id": "q2",
+                    "prompt": "Some bridges built by the Romans are still in use in the present day.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "TRUE"
+                  },
+                  {
+                    "id": "q3",
+                    "prompt": "European bridge design developed rapidly in the centuries immediately after the Roman era.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "FALSE"
+                  },
+                  {
+                    "id": "q4",
+                    "prompt": "The Tacoma Narrows Bridge collapsed during a period of exceptionally strong winds.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "FALSE"
+                  },
+                  {
+                    "id": "q5",
+                    "prompt": "The Danyang–Kunshan Grand Bridge took more than ten years to build.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "NOT GIVEN"
+                  }
+                ]
+              },
+              {
+                "type": "MC",
+                "instruction": "Choose the correct letter, A, B, C or D.",
+                "questions": [
+                  {
+                    "id": "q6",
+                    "prompt": "According to the passage, what was a key innovation of Roman engineers?",
+                    "options": [
+                      "A. Steel cables strung between towers",
+                      "B. Concrete that could set underwater",
+                      "C. Timber beams laid across rivers",
+                      "D. Solar panels embedded in roads"
+                    ],
+                    "answer": "B"
+                  },
+                  {
+                    "id": "q7",
+                    "prompt": "The bridge at Coalbrookdale was significant because it",
+                    "options": [
+                      "A. was the longest bridge of its time.",
+                      "B. marked the decline of stone as the main bridge material.",
+                      "C. was the first bridge to collapse in high winds.",
+                      "D. was designed using computer simulation."
+                    ],
+                    "answer": "B"
+                  },
+                  {
+                    "id": "q8",
+                    "prompt": "What lesson did engineers learn from the Tacoma Narrows disaster?",
+                    "options": [
+                      "A. Suspension bridges should never exceed one kilometre.",
+                      "B. Bridges must resist forces other than weight alone.",
+                      "C. Film should be used to record all bridge openings.",
+                      "D. Iron is an unsuitable material for large bridges."
+                    ],
+                    "answer": "B"
+                  },
+                  {
+                    "id": "q9",
+                    "prompt": "In the final paragraph, the writer suggests that bridges",
+                    "options": [
+                      "A. have lost their cultural significance in modern times.",
+                      "B. are valued mainly for their economic benefits.",
+                      "C. carry a symbolic meaning shared across cultures.",
+                      "D. will eventually be replaced by other structures."
+                    ],
+                    "answer": "C"
+                  }
+                ]
+              },
+              {
+                "type": "GAP",
+                "instruction": "Complete the sentences below. Write NO MORE THAN TWO WORDS AND/OR A NUMBER from the passage for each answer.",
+                "questions": [
+                  {
+                    "id": "q10",
+                    "prompt": "The Romans perfected the semicircular ______, giving their bridges great durability.",
+                    "answer": "stone arch"
+                  },
+                  {
+                    "id": "q11",
+                    "prompt": "The main span of the Golden Gate Bridge measures ______ metres.",
+                    "answer": "1,280",
+                    "altAnswers": [
+                      "1280"
+                    ]
+                  },
+                  {
+                    "id": "q12",
+                    "prompt": "The world's longest bridge extends for ______ kilometres.",
+                    "answer": "165"
+                  },
+                  {
+                    "id": "q13",
+                    "prompt": "Modern engineers test their designs using wind-tunnel modelling and computer ______.",
+                    "answer": "simulation"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "passage": {
+              "title": "The Bilingual Brain",
+              "paragraphs": [
+                "For much of the twentieth century, raising a child with two languages was widely discouraged. Teachers and even doctors warned parents that bilingualism would confuse young minds and delay learning. Modern neuroscience has overturned this view so completely that researchers now speak of a 'bilingual advantage' — a set of measurable cognitive benefits that come from managing two languages in one brain.",
+                "The most striking of these benefits concerns what psychologists call executive function: the mental system that controls attention, switches between tasks and filters out distractions. Because a bilingual person's two languages are always active, the brain must constantly select one and suppress the other. This unceasing exercise appears to strengthen executive function in the same way that daily training strengthens a muscle. In laboratory tests, bilingual participants consistently outperform monolinguals at tasks that require ignoring irrelevant information.",
+                "Brain-imaging studies have begun to reveal the physical basis of these effects. Research led by Ellen Bialystok at York University in Toronto found that lifelong bilinguals develop greater density of grey matter in regions associated with attention and control. Perhaps most remarkably, her team observed that bilingual patients developed symptoms of dementia on average four to five years later than monolingual patients with the same degree of brain deterioration. The second language, it seems, builds a 'cognitive reserve' that allows the brain to function well even as it ages.",
+                "The advantages are not confined to the laboratory. A study of interpreters at the European Parliament found that professional language-switchers were exceptionally good at what researchers call 'task-set reconfiguration' — abandoning one set of rules and adopting another at speed. Employers appear to have noticed: surveys across several countries show that employees who speak a second language earn, on average, between five and fifteen per cent more than their monolingual colleagues.",
+                "It is important, however, not to overstate the case. Some recent studies have failed to replicate the bilingual advantage in young adults, whose executive function is already at its peak. Critics such as Kenneth Paap argue that the benefits may be strongest at the two ends of life — in childhood, when control systems are still developing, and in old age, when they begin to decline. Even sceptics, though, accept that bilingualism does no cognitive harm, and that its social and economic value is beyond dispute.",
+                "For language learners, the practical message is encouraging. The brain changes observed in studies do not require perfect fluency acquired in infancy; they appear in people who learned their second language as adults, provided they use it regularly. Every hour spent reading, listening or speaking in another language is, quite literally, an investment in the structure of one's own brain — a bridge built from neuron to neuron, one conversation at a time."
+              ]
+            },
+            "questionGroups": [
+              {
+                "type": "TFNG",
+                "instruction": "Do the following statements agree with the information given in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+                "questions": [
+                  {
+                    "id": "q14",
+                    "prompt": "In the past, some medical professionals advised against raising children bilingually.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "TRUE"
+                  },
+                  {
+                    "id": "q15",
+                    "prompt": "A bilingual person's two languages are active only when they are speaking.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "FALSE"
+                  },
+                  {
+                    "id": "q16",
+                    "prompt": "Ellen Bialystok's research was funded by the Canadian government.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "NOT GIVEN"
+                  },
+                  {
+                    "id": "q17",
+                    "prompt": "Critics of the bilingual advantage believe that bilingualism damages young adults' cognition.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "FALSE"
+                  }
+                ]
+              },
+              {
+                "type": "MC",
+                "instruction": "Choose the correct letter, A, B, C or D.",
+                "questions": [
+                  {
+                    "id": "q18",
+                    "prompt": "The writer compares managing two languages to",
+                    "options": [
+                      "A. solving a mathematical problem.",
+                      "B. physical training that strengthens a muscle.",
+                      "C. filtering water through a screen.",
+                      "D. switching off an electrical device."
+                    ],
+                    "answer": "B"
+                  },
+                  {
+                    "id": "q19",
+                    "prompt": "What did Bialystok's team discover about bilingual patients?",
+                    "options": [
+                      "A. They never developed dementia.",
+                      "B. Their brains showed no physical deterioration.",
+                      "C. Their dementia symptoms appeared several years later than expected.",
+                      "D. They recovered from dementia more quickly than monolinguals."
+                    ],
+                    "answer": "C"
+                  },
+                  {
+                    "id": "q20",
+                    "prompt": "The study of European Parliament interpreters showed that they excelled at",
+                    "options": [
+                      "A. learning new languages quickly.",
+                      "B. earning higher salaries than politicians.",
+                      "C. switching rapidly between different sets of rules.",
+                      "D. remembering long speeches word for word."
+                    ],
+                    "answer": "C"
+                  },
+                  {
+                    "id": "q21",
+                    "prompt": "According to the final paragraph, the cognitive benefits of bilingualism",
+                    "options": [
+                      "A. are available only to those who learned two languages in infancy.",
+                      "B. can be gained by adults who use their second language regularly.",
+                      "C. disappear if the second language was learned at school.",
+                      "D. depend on achieving perfect fluency."
+                    ],
+                    "answer": "B"
+                  }
+                ]
+              },
+              {
+                "type": "GAP",
+                "instruction": "Complete the sentences below. Write NO MORE THAN TWO WORDS AND/OR A NUMBER from the passage for each answer.",
+                "questions": [
+                  {
+                    "id": "q22",
+                    "prompt": "The mental system that controls attention and task-switching is known as ______ function.",
+                    "answer": "executive"
+                  },
+                  {
+                    "id": "q23",
+                    "prompt": "Lifelong bilinguals were found to have greater density of ______ in key brain regions.",
+                    "answer": "grey matter"
+                  },
+                  {
+                    "id": "q24",
+                    "prompt": "A second language builds a 'cognitive ______' that protects the ageing brain.",
+                    "answer": "reserve"
+                  },
+                  {
+                    "id": "q25",
+                    "prompt": "Bilingual employees earn on average between five and ______ per cent more.",
+                    "answer": "fifteen",
+                    "altAnswers": [
+                      "15"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "passage": {
+              "title": "The Art of Forgetting",
+              "paragraphs": [
+                "We tend to treat forgetting as a defect — a crack in the machinery of the mind through which precious information leaks away. Students curse it before examinations, and older adults fear it as a signal of decline. Yet a growing number of neuroscientists argue that forgetting is not a failure of memory but one of its most essential functions: a deliberate process that keeps the mind flexible, efficient and sane.",
+                "The scientific study of forgetting began in 1885, when the German psychologist Hermann Ebbinghaus memorised thousands of invented syllables — meaningless combinations such as 'wid' and 'zof' — and then tested himself at intervals. He discovered that forgetting is dramatic at first and then slows: more than half of the material vanished within the first hour, while whatever survived a few days tended to persist for weeks. When he plotted his results, the line they formed became one of psychology's most famous images: the forgetting curve.",
+                "Later researchers drew an important distinction between information that is truly lost and information that is merely unreachable. In the well-known 'tip-of-the-tongue' state, people can often recall the first letter of a word, or how many syllables it has, without being able to produce the word itself — persuasive evidence that the memory is still stored, and that what has broken down is retrieval. Much of everyday forgetting, in other words, is a filing problem rather than an erasure.",
+                "More surprising is the discovery that the brain also erases actively. Far from being a passive fading, forgetting appears to be carried out by dedicated biological machinery. In a series of experiments with mice, researchers found that the birth of new neurons in the hippocampus — a region central to memory — actually weakened the animals' existing memories, as fresh connections overwrote old ones. The brain, it seems, spends energy not only recording the past but also clearing it away.",
+                "Why would evolution build a machine that deletes its own data? The answer lies in what memory is for. Remembering every detail of every experience would bury the patterns that matter. By discarding particulars, the brain forms generalizations — rules that can be applied to situations it has never met. The cost of failing to forget is illustrated by the Russian journalist Solomon Shereshevsky, studied for decades in the twentieth century, who remembered virtually everything he encountered: strings of numbers, entire speeches, conversations from years before. Yet he struggled to grasp the general meaning of what he read, drowning in detail that others would have thankfully lost.",
+                "Forgetting can even be steered. In 'directed forgetting' experiments, participants told to forget a list of words genuinely remember fewer of them later than participants told to keep them in mind. But not all memories obey. Those with strong emotional content — an accident, a humiliation, a moment of danger — are stubbornly resistant to erasure. This resistance is precisely what troubles people with post-traumatic stress disorder, and it explains why researchers hope that understanding the brain's natural forgetting machinery might one day help those who cannot stop remembering.",
+                "None of this means that forgetting never fails us. But the next time a name slips away, it may be some comfort to recall that the same pruning which lost the name is what keeps the mind quick, general and clear — that we forget, in large part, so that we can think."
+              ]
+            },
+            "questionGroups": [
+              {
+                "type": "TFNG",
+                "instruction": "Do the following statements agree with the information given in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+                "questions": [
+                  {
+                    "id": "q26",
+                    "prompt": "Hermann Ebbinghaus tested his memory using invented syllables.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "TRUE"
+                  },
+                  {
+                    "id": "q27",
+                    "prompt": "Ebbinghaus found that most forgetting takes place slowly, over many years.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "FALSE"
+                  },
+                  {
+                    "id": "q28",
+                    "prompt": "The 'tip-of-the-tongue' state suggests that some unrecalled information is still stored in memory.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "TRUE"
+                  },
+                  {
+                    "id": "q29",
+                    "prompt": "Research on active forgetting has been carried out only on human participants.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "FALSE"
+                  },
+                  {
+                    "id": "q30",
+                    "prompt": "Solomon Shereshevsky earned money by giving public memory performances.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "NOT GIVEN"
+                  }
+                ]
+              },
+              {
+                "type": "MC",
+                "instruction": "Choose the correct letter, A, B, C or D.",
+                "questions": [
+                  {
+                    "id": "q31",
+                    "prompt": "What is the main purpose of the first paragraph?",
+                    "options": [
+                      "A. To describe how students prepare for examinations",
+                      "B. To challenge the common view of forgetting as a defect",
+                      "C. To explain the causes of memory decline in old age",
+                      "D. To compare human memory with a machine"
+                    ],
+                    "answer": "B"
+                  },
+                  {
+                    "id": "q32",
+                    "prompt": "What did the experiments with mice demonstrate?",
+                    "options": [
+                      "A. Mice have weaker memories than other animals",
+                      "B. The hippocampus plays no role in forgetting",
+                      "C. The growth of new neurons can weaken existing memories",
+                      "D. Old memories prevent new neurons from forming"
+                    ],
+                    "answer": "C"
+                  },
+                  {
+                    "id": "q33",
+                    "prompt": "According to the passage, Shereshevsky's exceptional memory caused him to",
+                    "options": [
+                      "A. forget emotionally important events.",
+                      "B. find it hard to understand the overall meaning of texts.",
+                      "C. lose interest in reading altogether.",
+                      "D. remember only strings of numbers."
+                    ],
+                    "answer": "B"
+                  },
+                  {
+                    "id": "q34",
+                    "prompt": "The writer mentions post-traumatic stress disorder in order to",
+                    "options": [
+                      "A. show that directed forgetting works for every kind of memory.",
+                      "B. argue that emotional memories fade faster than neutral ones.",
+                      "C. illustrate the problems caused when memories resist erasure.",
+                      "D. prove that forgetting cannot be studied scientifically."
+                    ],
+                    "answer": "C"
+                  }
+                ]
+              },
+              {
+                "type": "GAP",
+                "instruction": "Complete the sentences below. Write NO MORE THAN TWO WORDS from the passage for each answer.",
+                "questions": [
+                  {
+                    "id": "q35",
+                    "prompt": "When Ebbinghaus plotted his results, the line became known as the forgetting ______.",
+                    "answer": "curve"
+                  },
+                  {
+                    "id": "q36",
+                    "prompt": "When stored information cannot be accessed, the problem lies with ______ rather than storage.",
+                    "answer": "retrieval"
+                  },
+                  {
+                    "id": "q37",
+                    "prompt": "By discarding details, the brain is able to form ______ that can be applied to new situations.",
+                    "answer": "generalizations",
+                    "altAnswers": [
+                      "generalisations",
+                      "rules"
+                    ]
+                  },
+                  {
+                    "id": "q38",
+                    "prompt": "Memories with strong ______ content are especially difficult to erase.",
+                    "answer": "emotional"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

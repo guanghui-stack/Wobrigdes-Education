@@ -2,11 +2,12 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import {
-  sanitizeReadingContent,
+  sanitizeReadingParts,
   type ReadingContent,
   type WritingContent,
 } from "@/lib/exercise-content";
-import { ReadingExam, WritingExam } from "@/components/exam/exam-room";
+import { WritingExam } from "@/components/exam/exam-room";
+import { ReadingCbtExam } from "@/components/exam/reading-cbt";
 
 export const metadata = { title: "Phòng làm bài" };
 
@@ -34,7 +35,7 @@ export default async function ExamPage({
 
   if (attempt.exercise.skill === "READING") {
     const content = JSON.parse(attempt.exercise.content) as ReadingContent;
-    return <ReadingExam {...props} content={sanitizeReadingContent(content)} />;
+    return <ReadingCbtExam {...props} parts={sanitizeReadingParts(content)} />;
   }
 
   if (attempt.exercise.skill === "WRITING") {

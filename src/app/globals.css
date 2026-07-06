@@ -80,6 +80,21 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ===== Phòng thi Reading kiểu CBT (mô phỏng đề thi thật) ===== */
+.font-exam {
+  font-family: Arial, Helvetica, "Segoe UI", sans-serif;
+}
+
+/* Highlight văn bản của học viên (CSS Custom Highlight API) */
+::highlight(wb-hl) {
+  background-color: #fde047;
+  color: inherit;
+}
+::highlight(wb-note) {
+  background-color: #bfdbfe;
+  color: inherit;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -16,12 +16,28 @@ export async function GET() {
       "chưa chạy (dev hoặc instrumentation không được gọi)",
   };
 
-  try {
-    const [users, exercises, admins] = await Promise.all([
-      db.user.count(),
-      db.exercise.count(),
-      db.user.count({ where: { role: "ADMIN" } }),
+  // Giới hạn 8 giây cho phần kiểm tra database — nếu kết nối bị treo
+  // (thường do sai host trong DATABASE_URL) vẫn trả được báo cáo lỗi rõ ràng.
+  const withTimeout = <T,>(p: Promise<T>, ms: number) =>
+    Promise.race<T>([
+      p,
+      new Promise<T>((_, reject) =>
+        setTimeout(
+          () => reject(new Error(`Hết thời gian chờ sau ${ms / 1000}s — kết nối database bị treo (kiểm tra phần host trong DATABASE_URL)`)),
+          ms
+        )
+      ),
     ]);
+
+  try {
+    const [users, exercises, admins] = await withTimeout(
+      Promise.all([
+        db.user.count(),
+        db.exercise.count(),
+        db.user.count({ where: { role: "ADMIN" } }),
+      ]),
+      8000
+    );
     report.database = "ok";
     report.userCount = users;
     report.adminCount = admins;

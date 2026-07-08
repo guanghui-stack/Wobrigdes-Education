@@ -877,6 +877,229 @@
           }
         ]
       }
+    },
+    {
+      "skill": "READING",
+      "taskType": "READING_PASSAGE",
+      "title": "Reading Demo — All Question Types (8 dạng câu hỏi)",
+      "description": "Đề trải nghiệm đủ 8 dạng câu hỏi: Matching Headings (kéo-thả vào bài đọc), TFNG, Multiple Choice 1 & nhiều đáp án, Matching Information/Features (kéo-thả, dùng lại đáp án), Gap Filling (giới hạn từ), Matching Endings · 18 câu · 25 phút.",
+      "durationMinutes": 25,
+      "content": {
+        "parts": [
+          {
+            "passage": {
+              "title": "The Story of Bridges",
+              "paragraphs": [
+                "Few structures embody human ambition as clearly as the bridge. From the first fallen log laid across a stream to the steel giants that now span entire bays, bridges have always served a single, elegant purpose: to connect what nature has kept apart. Historians believe that the earliest deliberate bridges were built more than three thousand years ago, when communities in Mesopotamia and China began laying timber beams over rivers to link farmland with markets.",
+                "The Romans transformed bridge-building from a craft into a science. By perfecting the semicircular stone arch, they created crossings of astonishing durability; several Roman bridges, such as the Alcántara Bridge in Spain, still carry traffic today, almost two thousand years after they were completed. Roman engineers also invented a form of concrete that could harden underwater, allowing them to sink foundations directly into riverbeds. Their achievements were so advanced that European bridge design barely changed for the next thousand years.",
+                "The Industrial Revolution rewrote the rules. Iron, and later steel, allowed engineers to build longer, lighter and far more daring structures. The world's first major iron bridge was erected at Coalbrookdale in England in 1779, and its success signalled the end of stone's long dominance. In the nineteenth century, the suspension bridge emerged as the champion of great distances: by hanging the roadway from cables strung between tall towers, engineers could leap across gorges and estuaries that had once seemed impossible to span.",
+                "The twentieth century brought both triumph and tragedy. The Golden Gate Bridge, opened in San Francisco in 1937, became an icon of modern engineering with its 1,280-metre main span. Yet only three years later, the Tacoma Narrows Bridge in Washington State twisted itself apart in moderate winds, a failure captured on film and studied by engineering students ever since. The disaster taught designers a lasting lesson: a bridge must be tested not only against weight, but against the invisible forces of wind and resonance.",
+                "Today, the frontier of bridge-building lies in Asia. China alone has constructed more than a million bridges, including the Danyang–Kunshan Grand Bridge, which stretches 165 kilometres and is currently the longest bridge on Earth. Modern designers combine high-performance concrete, wind-tunnel modelling and computer simulation to create structures that their Roman predecessors could scarcely have imagined. Some experimental designs even generate their own electricity through solar panels embedded in the road surface.",
+                "Yet for all this technology, the meaning of the bridge has never changed. Anthropologists note that in almost every culture, the bridge appears as a symbol of connection, opportunity and passage from one stage of life to another. To build a bridge, physically or otherwise, is to declare that separation is temporary and that the other side is worth reaching. It is perhaps for this reason that the bridge, more than any other structure, continues to capture the human imagination."
+              ],
+              "labelParagraphs": true
+            },
+            "questionGroups": [
+              {
+                "type": "MATCH_HEADINGS",
+                "instruction": "The passage has six paragraphs, A–F. Choose the correct heading for paragraphs B, C and D from the list of headings below. Drag the heading to the correct box in the passage.",
+                "options": [
+                  "Ancient engineering that still stands",
+                  "New materials transform bridge design",
+                  "Triumph and disaster in the modern era",
+                  "The rising cost of bridge construction",
+                  "Bridges in myths and legends"
+                ],
+                "questions": [
+                  {
+                    "id": "q1",
+                    "paragraph": "B",
+                    "answer": "i"
+                  },
+                  {
+                    "id": "q2",
+                    "paragraph": "C",
+                    "answer": "ii"
+                  },
+                  {
+                    "id": "q3",
+                    "paragraph": "D",
+                    "answer": "iii"
+                  }
+                ]
+              },
+              {
+                "type": "TFNG",
+                "instruction": "Do the following statements agree with the information given in the passage? Choose TRUE if the statement agrees with the information, FALSE if the statement contradicts the information, or NOT GIVEN if there is no information on this.",
+                "questions": [
+                  {
+                    "id": "q4",
+                    "prompt": "The Alcántara Bridge still carries traffic today.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "TRUE"
+                  },
+                  {
+                    "id": "q5",
+                    "prompt": "The first major iron bridge was built in the seventeenth century.",
+                    "options": [
+                      "TRUE",
+                      "FALSE",
+                      "NOT GIVEN"
+                    ],
+                    "answer": "FALSE"
+                  }
+                ]
+              },
+              {
+                "type": "MC",
+                "instruction": "Choose the correct letter, A, B, C or D.",
+                "questions": [
+                  {
+                    "id": "q6",
+                    "prompt": "What is the main purpose of the final paragraph?",
+                    "options": [
+                      "A. To describe the cost of modern bridges",
+                      "B. To compare bridges in different countries",
+                      "C. To explain the symbolic meaning bridges hold for people",
+                      "D. To predict future bridge technology"
+                    ],
+                    "answer": "C"
+                  }
+                ]
+              },
+              {
+                "type": "MATCH_INFO",
+                "instruction": "Which paragraph contains the following information? Choose the correct letter, A–F.",
+                "options": [
+                  "A",
+                  "B",
+                  "C",
+                  "D",
+                  "E",
+                  "F"
+                ],
+                "reuseOptions": true,
+                "questions": [
+                  {
+                    "id": "q7",
+                    "prompt": "a description of a bridge that destroyed itself in moderate winds",
+                    "answer": "D"
+                  },
+                  {
+                    "id": "q8",
+                    "prompt": "a reference to the longest bridge in the world",
+                    "answer": "E"
+                  },
+                  {
+                    "id": "q9",
+                    "prompt": "the reason the earliest bridges were built",
+                    "answer": "A"
+                  }
+                ]
+              },
+              {
+                "type": "MATCH_FEATURES",
+                "instruction": "Look at the following statements and the list of bridges below. Match each statement with the correct bridge, A–D.",
+                "options": [
+                  "The Alcántara Bridge",
+                  "The Coalbrookdale bridge",
+                  "The Golden Gate Bridge",
+                  "The Danyang–Kunshan Grand Bridge"
+                ],
+                "reuseOptions": true,
+                "questions": [
+                  {
+                    "id": "q10",
+                    "prompt": "It opened to the public in 1937.",
+                    "answer": "C"
+                  },
+                  {
+                    "id": "q11",
+                    "prompt": "It was the world's first major iron bridge.",
+                    "answer": "B"
+                  },
+                  {
+                    "id": "q12",
+                    "prompt": "It stretches for 165 kilometres.",
+                    "answer": "D"
+                  }
+                ]
+              },
+              {
+                "type": "MC_MULTI",
+                "instruction": "Choose TWO correct answers.",
+                "questions": [
+                  {
+                    "id": "q13",
+                    "prompt": "Which TWO materials does the writer mention as being used for bridges before the industrial era?",
+                    "options": [
+                      "A. Timber",
+                      "B. Glass",
+                      "C. Stone",
+                      "D. Plastic",
+                      "E. Aluminium"
+                    ],
+                    "selectCount": 2,
+                    "answer": [
+                      "A",
+                      "C"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "GAP",
+                "instruction": "Complete the summary below.",
+                "wordLimit": "TWO_WORDS_NUMBER",
+                "boxTitle": "Bridges in numbers",
+                "questions": [
+                  {
+                    "id": "q15",
+                    "prompt": "The main span of the Golden Gate Bridge measures ______ metres.",
+                    "answer": "1,280",
+                    "altAnswers": [
+                      "1280"
+                    ]
+                  },
+                  {
+                    "id": "q16",
+                    "prompt": "Roman engineers invented a form of concrete that could harden ______.",
+                    "answer": "underwater",
+                    "altAnswers": [
+                      "under water"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "MATCH_ENDINGS",
+                "instruction": "Complete each sentence with the correct ending, A–C, below.",
+                "options": [
+                  "to link farmland with markets.",
+                  "to test designs against wind and resonance.",
+                  "to build entirely with gold."
+                ],
+                "questions": [
+                  {
+                    "id": "q17",
+                    "prompt": "The earliest bridges allowed communities",
+                    "answer": "A"
+                  },
+                  {
+                    "id": "q18",
+                    "prompt": "After the Tacoma Narrows collapse, engineers understood the need",
+                    "answer": "B"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

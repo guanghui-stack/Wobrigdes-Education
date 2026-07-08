@@ -13,9 +13,9 @@ export const metadata = { title: "Xem thử phòng thi CBT" };
 export default function CbtPreviewPage() {
   if (process.env.NODE_ENV === "production") notFound();
 
-  const fullTest = seedData.exercises.find(
-    (e) => e.taskType === "READING_FULL"
-  );
+  const fullTest =
+    seedData.exercises.find((e) => e.title.includes("All Question Types")) ??
+    seedData.exercises.find((e) => e.taskType === "READING_FULL");
   if (!fullTest) notFound();
 
   return (

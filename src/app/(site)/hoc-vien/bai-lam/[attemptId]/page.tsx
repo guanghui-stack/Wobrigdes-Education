@@ -135,7 +135,7 @@ function ReadingResult({
         Chi tiết từng câu
       </h2>
       <ol className="mt-6 divide-y divide-line border-y border-line">
-        {detail.map((q, i) => (
+        {detail.map((q) => (
           <li key={q.id} className="flex gap-4 py-4">
             {q.correct ? (
               <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-success" aria-hidden="true" />
@@ -145,13 +145,14 @@ function ReadingResult({
             <div className="min-w-0">
               <p className="leading-relaxed text-ink">
                 <span className="font-ui text-sm font-bold tabular-nums text-gold">
-                  {i + 1}.
+                  {q.numberLabel}.
                 </span>{" "}
                 {q.prompt}
               </p>
               <p className="mt-1.5 font-ui text-sm">
                 <span className={q.correct ? "text-success" : "text-danger"}>
                   Bạn trả lời: {q.userAnswer || "(bỏ trống)"}
+                  {q.maxScore > 1 && ` — đúng ${q.score}/${q.maxScore}`}
                 </span>
                 {!q.correct && (
                   <span className="ml-4 text-success">

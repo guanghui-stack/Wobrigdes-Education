@@ -56,11 +56,34 @@ Tick **"Mở cho học viên làm ngay"** → bấm **Tạo bài tập**. Xong!
 
 ---
 
-## Thêm đề READING (soạn theo mẫu JSON)
+## Thêm đề READING (soạn bằng form — không cần JSON)
 
-Đề Reading gồm bài đọc + câu hỏi + đáp án nên được nhập bằng một đoạn văn bản
-có cấu trúc (JSON). Đừng lo — khi bạn bấm Tạo bài tập mới và chọn Kỹ năng =
-**Reading**, ô nội dung đã có sẵn **bộ khung mẫu**, bạn chỉ thay nội dung vào.
+Chọn Kỹ năng = **Reading** là trình tạo đề hiện ra. Quy trình:
+
+1. Điền **tiêu đề bài đọc** và dán **bài đọc** (các đoạn cách nhau một dòng
+   trống — đoạn 1 tự thành A, đoạn 2 thành B…).
+2. Ở ô **"Thêm nhóm câu hỏi — chọn dạng bài"**, chọn 1 trong 8 dạng rồi bấm
+   **Thêm nhóm**. Form nhập nội dung + đáp án của đúng dạng đó sẽ hiện ra.
+3. Nhập câu hỏi, chọn đáp án đúng từ trình đơn (hệ thống **tự đánh số câu**,
+   kể cả dạng chọn 2 đáp án chiếm 2 số).
+4. Cần thêm passage? Bấm **Thêm Part 2/3** ở cuối.
+
+| Dạng bài | Học viên thao tác |
+|---|---|
+| True/False/Not Given | Chọn 1 trong 3 |
+| Multiple Choice (1 đáp án) | Radio A–D |
+| Multiple Choice (nhiều đáp án) | Tick đúng số đáp án quy định, chiếm nhiều số câu |
+| Gap Filling | Ô điền ngay trong câu; admin chọn giới hạn từ (ONE WORD → NO MORE THAN THREE WORDS AND/OR A NUMBER); vượt giới hạn có cảnh báo đỏ |
+| Matching Headings | Kéo heading thả vào ô nét đứt **trong bài đọc** |
+| Matching Information | Kéo chữ cái A–F vào ô cạnh câu — **dùng lại được** |
+| Matching Features | Nối câu với danh sách A–F — dùng lại được |
+| Matching Sentence Endings | Kéo phần kết thúc câu vào ô — mỗi ending 1 lần |
+
+> Trên máy tính bảng/không kéo-thả được: bấm chọn thẻ đáp án rồi bấm vào ô
+> trống. Bấm ✕ trên ô để gỡ đáp án.
+
+Phần dưới đây là **chế độ nâng cao (JSON)** — chỉ dành cho người muốn sửa tay
+hoặc sao chép đề giữa các hệ thống. Người dùng thông thường bỏ qua.
 
 ### Cấu trúc tổng thể — đề gồm 1 đến 3 part (giống đề thi thật)
 

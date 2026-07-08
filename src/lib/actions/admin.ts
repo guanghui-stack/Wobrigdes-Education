@@ -120,6 +120,30 @@ function parseExerciseForm(formData: FormData): {
       if (parts.length > 3) {
         return { error: "Tối đa 3 part cho một bài Reading (giống đề thi thật)." };
       }
+      const TYPES = [
+        "TFNG",
+        "MC",
+        "MC_MULTI",
+        "GAP",
+        "MATCH_HEADINGS",
+        "MATCH_INFO",
+        "MATCH_FEATURES",
+        "MATCH_ENDINGS",
+      ];
+      const WORD_LIMITS = [
+        "ONE_WORD",
+        "TWO_WORDS",
+        "THREE_WORDS",
+        "ONE_WORD_NUMBER",
+        "TWO_WORDS_NUMBER",
+        "THREE_WORDS_NUMBER",
+      ];
+      const MATCH_TYPES = [
+        "MATCH_HEADINGS",
+        "MATCH_INFO",
+        "MATCH_FEATURES",
+        "MATCH_ENDINGS",
+      ];
       const seenIds = new Set<string>();
       for (let pi = 0; pi < parts.length; pi++) {
         const part = parts[pi];
@@ -131,20 +155,51 @@ function parseExerciseForm(formData: FormData): {
           return { error: `${label}: thiếu questionGroups.` };
         }
         for (const g of part.questionGroups) {
-          if (!["TFNG", "MC", "GAP"].includes(g.type)) {
-            return { error: `${label}: loại câu hỏi không hỗ trợ: ${g.type} (dùng TFNG, MC, GAP).` };
+          if (!TYPES.includes(g.type)) {
+            return { error: `${label}: loại câu hỏi không hỗ trợ: ${g.type}.` };
           }
           if (!Array.isArray(g.questions) || g.questions.length === 0) {
-            return { error: `${label}: mỗi questionGroup cần ít nhất 1 câu hỏi.` };
+            return { error: `${label}: mỗi nhóm câu hỏi cần ít nhất 1 câu.` };
+          }
+          if (g.type === "GAP" && g.wordLimit && !WORD_LIMITS.includes(g.wordLimit)) {
+            return { error: `${label}: wordLimit không hợp lệ: ${g.wordLimit}.` };
+          }
+          const isMatch = MATCH_TYPES.includes(g.type);
+          if (isMatch) {
+            if (!Array.isArray(g.options) || g.options.length < 2) {
+              return { error: `${label} (${g.type}): cần danh sách "options" tối thiểu 2 mục ở cấp nhóm.` };
+            }
           }
           for (const q of g.questions) {
-            if (!q.id || !q.prompt || !q.answer) {
-              return { error: `${label}: mỗi câu hỏi cần đủ id, prompt và answer.` };
-            }
+            if (!q.id) return { error: `${label}: câu hỏi thiếu id.` };
             if (seenIds.has(q.id)) {
               return { error: `Trùng id câu hỏi "${q.id}" — id phải duy nhất trong TOÀN BỘ đề (kể cả giữa các part).` };
             }
             seenIds.add(q.id);
+
+            if (g.type === "MATCH_HEADINGS") {
+              if (!q.paragraph) {
+                return { error: `${label} (MATCH_HEADINGS): mỗi câu cần "paragraph" (đoạn văn gắn ô thả, ví dụ "B").` };
+              }
+            } else if (!q.prompt) {
+              return { error: `${label} (${g.type}): câu ${q.id} thiếu prompt.` };
+            }
+
+            if (g.type === "MC_MULTI") {
+              if (!Array.isArray(q.options) || q.options.length < 3) {
+                return { error: `${label} (MC_MULTI): câu ${q.id} cần tối thiểu 3 lựa chọn.` };
+              }
+              if (!Array.isArray(q.answer) || q.answer.length < 2) {
+                return { error: `${label} (MC_MULTI): câu ${q.id} cần mảng answer tối thiểu 2 chữ cái (ví dụ ["A","C"]).` };
+              }
+            } else if (g.type === "MC") {
+              if (!Array.isArray(q.options) || q.options.length < 2) {
+                return { error: `${label} (MC): câu ${q.id} cần tối thiểu 2 lựa chọn.` };
+              }
+              if (!q.answer) return { error: `${label}: câu ${q.id} thiếu answer.` };
+            } else if (!q.answer) {
+              return { error: `${label}: câu ${q.id} thiếu answer.` };
+            }
           }
         }
       }

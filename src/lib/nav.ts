@@ -1,6 +1,6 @@
 export const MAIN_NAV = [
   { href: "/", label: "Trang chủ" },
-  { href: "/khoa-hoc-intensive", label: "Khóa học Intensive 7.0" },
+  { href: "/khoa-hoc-ielts", label: "Khóa học IELTS" },
   { href: "/khoa-e-learning", label: "Khoá E-learning lẻ" },
   { href: "/luyen-tap", label: "Luyện tập 4 kỹ năng" },
   { href: "/bai-mau-writing", label: "Bài mẫu Writing 8.0+" },

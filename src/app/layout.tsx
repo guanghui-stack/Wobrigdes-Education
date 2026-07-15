@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | Wobridges English Center",
   },
   description:
-    "Trung tâm Anh ngữ Wobridges (World Bridges) — Khóa học IELTS Intensive 7.0, E-learning, luyện tập 4 kỹ năng chuẩn format IELTS và kho bài mẫu Writing 8.0+.",
+    "Trung tâm Anh ngữ Wobridges (World Bridges) — Lộ trình IELTS 3 giai đoạn (Pre-IELTS, Basic, Advanced), E-learning, luyện tập 4 kỹ năng chuẩn format IELTS và kho bài mẫu Writing 8.0+.",
 };
 
 export default function RootLayout({

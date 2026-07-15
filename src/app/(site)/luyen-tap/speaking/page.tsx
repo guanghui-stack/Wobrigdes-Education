@@ -81,7 +81,7 @@ export default function SpeakingPage() {
           ))}
         </div>
         <NoteBox className="mt-10" title="Luyện cùng giáo viên">
-          Học viên khóa Intensive được phỏng vấn Speaking mô phỏng hằng tháng với
+          Học viên khóa Advanced được phỏng vấn Speaking mô phỏng hằng tháng với
           giáo viên. Nếu bạn muốn được đánh giá trình độ Speaking hiện tại, hãy
           đặt lịch kiểm tra đầu vào miễn phí.
         </NoteBox>

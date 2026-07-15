@@ -15,9 +15,9 @@ import { SectionHeading, NoteBox, ButtonLink } from "@/components/ui";
 const TOC = [
   {
     no: "01",
-    href: "/khoa-hoc-intensive",
-    title: "Khóa học Intensive 7.0",
-    note: "Lộ trình cam kết đầu ra 7.0 trong 6 tháng",
+    href: "/khoa-hoc-ielts",
+    title: "Khóa học IELTS",
+    note: "Lộ trình 3 giai đoạn: Pre-IELTS → Basic → Advanced (0 → 6.5+)",
   },
   {
     no: "02",
@@ -97,8 +97,8 @@ export default function HomePage() {
               gần hơn với mục tiêu của mình.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <ButtonLink href="/khoa-hoc-intensive" variant="primary">
-                Khóa Intensive 7.0
+              <ButtonLink href="/khoa-hoc-ielts" variant="primary">
+                Khóa học IELTS
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </ButtonLink>
               <ButtonLink href="/luyen-tap" variant="outline">
@@ -130,10 +130,10 @@ export default function HomePage() {
             <div>
               <dt className="label-caps flex items-center gap-2">
                 <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
-                Cam kết
+                Chương trình
               </dt>
               <dd className="mt-2.5 text-[0.95rem] leading-relaxed text-ink-soft">
-                Đầu ra 7.0 bằng hợp đồng · học lại miễn phí nếu chưa đạt
+                3 giai đoạn Pre-IELTS → Basic → Advanced · luôn cập nhật xu hướng đề thi
               </dd>
             </div>
             <div>
@@ -253,8 +253,8 @@ export default function HomePage() {
             <ButtonLink href="/dang-ky" variant="gold">
               Đăng ký học thử miễn phí
             </ButtonLink>
-            <ButtonLink href="/khoa-hoc-intensive" variant="outline">
-              Tìm hiểu khóa Intensive
+            <ButtonLink href="/khoa-hoc-ielts" variant="outline">
+              Tìm hiểu lộ trình IELTS
             </ButtonLink>
           </div>
           <NoteBox className="mt-12 text-left" title="Lưu ý">

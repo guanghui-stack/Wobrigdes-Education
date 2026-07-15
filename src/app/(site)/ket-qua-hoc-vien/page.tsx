@@ -9,11 +9,11 @@ export const metadata: Metadata = {
 };
 
 const BOARD = [
-  { name: "Nguyễn Minh Anh", start: "6.0", end: "8.0", months: 5, target: "Học bổng thạc sĩ Anh", course: "Intensive 7.0" },
-  { name: "Trần Quốc Bảo", start: "5.5", end: "7.5", months: 6, target: "Du học Canada", course: "Intensive 7.0" },
-  { name: "Lê Thu Hà", start: "5.5", end: "7.0", months: 6, target: "Du học Úc", course: "Intensive 7.0" },
+  { name: "Nguyễn Minh Anh", start: "6.0", end: "8.0", months: 5, target: "Học bổng thạc sĩ Anh", course: "Advanced" },
+  { name: "Trần Quốc Bảo", start: "5.5", end: "7.5", months: 6, target: "Du học Canada", course: "Advanced" },
+  { name: "Lê Thu Hà", start: "5.5", end: "7.0", months: 6, target: "Du học Úc", course: "Advanced" },
   { name: "Phạm Đức Long", start: "6.5", end: "7.5", months: 4, target: "Định cư tay nghề", course: "E-learning Writing" },
-  { name: "Võ Ngọc Trâm", start: "5.0", end: "7.0", months: 8, target: "Xét tuyển đại học", course: "Intensive 7.0" },
+  { name: "Võ Ngọc Trâm", start: "5.0", end: "7.0", months: 8, target: "Xét tuyển đại học", course: "Advanced" },
   { name: "Đặng Hải Nam", start: "6.0", end: "7.0", months: 5, target: "Yêu cầu công việc", course: "E-learning Speaking" },
 ];
 
@@ -108,7 +108,7 @@ export default function ResultsPage() {
         </p>
         <div className="mt-9 flex flex-wrap justify-center gap-3">
           <ButtonLink href="/dang-ky" variant="gold">Đặt lịch kiểm tra miễn phí</ButtonLink>
-          <ButtonLink href="/khoa-hoc-intensive" variant="outline">Xem khoá Intensive 7.0</ButtonLink>
+          <ButtonLink href="/khoa-hoc-ielts" variant="outline">Xem lộ trình IELTS</ButtonLink>
         </div>
         <NoteBox className="mt-12 text-left" title="Minh bạch">
           Wobridges chỉ công bố kết quả khi có phiếu điểm đối chứng và được học

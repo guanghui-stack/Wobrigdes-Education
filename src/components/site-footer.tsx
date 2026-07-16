@@ -23,7 +23,7 @@ export function SiteFooter() {
             trình cá nhân hóa, luyện tập 4 kỹ năng chuẩn format và đội ngũ giáo
             viên chấm chữa tận tâm.
           </p>
-          <p className="mt-5 font-ui text-sm font-semibold text-cream/90">
+          <p className="mt-5 text-[0.95rem] font-semibold leading-relaxed text-cream/90">
             Công ty TNHH Kết Nối Toàn Cầu
           </p>
           <ul className="mt-4 space-y-2.5 font-ui text-sm text-cream/85">

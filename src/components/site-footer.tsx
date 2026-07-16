@@ -23,14 +23,19 @@ export function SiteFooter() {
             trình cá nhân hóa, luyện tập 4 kỹ năng chuẩn format và đội ngũ giáo
             viên chấm chữa tận tâm.
           </p>
-          <ul className="mt-6 space-y-2.5 font-ui text-sm text-cream/85">
+          <p className="mt-5 font-ui text-sm font-semibold text-cream/90">
+            Công ty TNHH Kết Nối Toàn Cầu
+          </p>
+          <ul className="mt-4 space-y-2.5 font-ui text-sm text-cream/85">
             <li className="flex items-start gap-2.5">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-soft" aria-hidden="true" />
-              123 Đường Nguyễn Văn Cừ, Quận 5, TP. Hồ Chí Minh
+              <span>23/53G Nguyễn Hữu Tiến, Phường Tây Thạnh, Thành phố Hồ Chí Minh, Việt Nam</span>
             </li>
             <li className="flex items-center gap-2.5">
               <Phone className="h-4 w-4 shrink-0 text-gold-soft" aria-hidden="true" />
-              0901 234 567
+              <a href="tel:+84866868701" className="transition-colors hover:text-gold-soft">
+                0866 868 701
+              </a>
             </li>
             <li className="flex items-center gap-2.5">
               <Mail className="h-4 w-4 shrink-0 text-gold-soft" aria-hidden="true" />
@@ -86,7 +91,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-cream/15">
         <p className="mx-auto max-w-6xl px-6 py-5 font-ui text-xs tracking-wide text-cream/50">
-          © {new Date().getFullYear()} Wobridges English Center. Bảo lưu mọi quyền.
+          © {new Date().getFullYear()} Công ty TNHH Kết Nối Toàn Cầu. Bảo lưu mọi quyền.
         </p>
       </div>
     </footer>

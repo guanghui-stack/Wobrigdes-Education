@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import seedData from "../../prisma/seed-data.json";
+import readingGameTheory from "../../prisma/reading-game-theory.json";
 
 /**
  * Tạo bảng trực tiếp bằng SQL MySQL (tương đương `prisma db push` cho schema
@@ -114,7 +115,8 @@ export async function initDatabase() {
     console.log(`[wobridges] Đã tạo tài khoản admin: ${seedData.admin.email}`);
   }
 
-  for (const ex of seedData.exercises) {
+  const exercises = [...seedData.exercises, readingGameTheory];
+  for (const ex of exercises) {
     const existing = await db.exercise.findFirst({ where: { title: ex.title } });
     if (!existing) {
       await db.exercise.create({
